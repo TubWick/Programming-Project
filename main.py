@@ -20,6 +20,7 @@ text_surf = shenttpuro.render( 'First Strike',True, (255, 10, 10) )
 
 screen_state = 0
 
+#classes
 class Button:
     def __init__(self, x, y, width, height, text, action=None):
         self.x = x
@@ -77,20 +78,19 @@ class BackButton(Button):
 class Leaderboard:
     def __init__(self,x,y):
         self.x,self.y = x,y
-        self.lbfont = 'files/mini_pixel-7.ttf'
+        self.lbfont = pygame.font.Font('files/mini_pixel-7.ttf', 70)
         self.lbwidth = 400
         self.lbheight =700
     def draw_leaderboard(self):
         backbutton.imagedraw()
-        
-        
-        leaderboard_rect=pygame.Rect((self.x // 2 - self.lbwidth//2, self.y //2 - self.lbheight//2 - 170),(self.lbwidth, self.lbheight))
+        leaderboard_rect=pygame.Rect((self.x // 2 - self.lbwidth//2, self.y //2 - self.lbheight//2),(self.lbwidth, self.lbheight))
         pygame.draw.rect(screen,(colour_dark),leaderboard_rect)
+        lbtitlesurf = self.lbfont.render('Leaderboard',True,(255,255,255))
+        screen.blit(lbtitlesurf,(self.x // 2 - lbtitlesurf.get_width()//2, self.y // 2 - self.lbheight // 2 - 70))
 
-leaderboard = Leaderboard(width,height)
 
 
-
+#button actions changing screenstate
 def quit_action():
     pygame.quit()
 
@@ -104,10 +104,11 @@ def leaderboardaction():
     screen_state = 2
 
 
-# button obj
+# instantiations
 startbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 180, button_width, button_height, "Start", quit_action)
 settingsbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 120, button_width, button_height, "Settings", settings_action)
-leaderboardbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 60, button_width, button_height, "Leaderboard", leaderboardaction) 
+leaderboardbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 60, button_width, button_height, "Leaderboard", leaderboardaction)
+leaderboard = Leaderboard(width,height)
 quitbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 , button_width, button_height, "Quit", quit_action)
 backbutton = BackButton(10,10,width,height,lambda: back_button.backaction())
 # game loop
