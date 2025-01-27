@@ -66,8 +66,29 @@ class BackButton(Button):
     def imagedraw(self):
         screen.blit(self.back_img,(self.rect.x,self.rect.y))
 
-from leaderboard import highscore
-Highscore = highscore(width,height,lambda:Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 60, button_width, button_height,"leaderboard"),screen)
+
+#class leaderboard
+#open to csv
+#add the score to the list of scores in the csv
+#sort the scores - use bubble sort
+#draw the list
+#lb = leaderboard
+
+class Leaderboard:
+    def __init__(self,x,y):
+        self.x,self.y = x,y
+        self.lbfont = 'files/mini_pixel-7.ttf'
+        self.lbwidth = 400
+        self.lbheight =700
+    def draw_leaderboard(self):
+        backbutton.imagedraw()
+        
+        
+        leaderboard_rect=pygame.Rect((self.x // 2 - self.lbwidth//2, self.y //2 - self.lbheight//2 - 170),(self.lbwidth, self.lbheight))
+        pygame.draw.rect(screen,(colour_dark),leaderboard_rect)
+
+leaderboard = Leaderboard(width,height)
+
 
 
 def quit_action():
@@ -123,6 +144,7 @@ while running:
     if screen_state == 2:
         backbutton.imagedraw()
         backbutton.backaction()
+        leaderboard.draw_leaderboard()
     pygame.display.update()
 
 pygame.quit()
@@ -142,24 +164,5 @@ pygame.quit()
 
 
 
-
-
-
-#class leaderboard
-#open to csv
-#add the score to the list of scores in the csv
-#sort the scores - use bubble sort
-#draw the list
-#lb = leaderboard
-
-class Leaderboard(self,x,y):
-    self.x,self.y = x,y
-    self.lbcolour = (255,255,255)
-    self.lbfont = 'files/mini_pixel-7.ttf'
-def draw_leaderboard(self):
-    screen.fill(0,0,0)
-    backbutton.imagedraw()
-    leaderboard_rect=pygame.Rect((screen.get_width()//2-self.max/1.5,screen.get_height()//2-(self.max_height*4)),(self.max+10,(self.max_height*5)))
-    pygame.draw.rect(screen,(0,173,212),highscore_rect)
 
 
