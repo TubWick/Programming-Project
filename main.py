@@ -2,8 +2,8 @@ import pygame
 
 pygame.init()
 
-res = (1080, 1080)
-screen = pygame.display.set_mode(res)
+res = pygame.display.Info()
+screen = pygame.display.set_mode((res.current_w, res.current_h))
 colour = (0, 0, 0)
 colour_light = (100, 100, 100)
 colour_dark = (170, 170, 170)
