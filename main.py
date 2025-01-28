@@ -55,7 +55,7 @@ class Button:
 class BackButton(Button):
     def __init__(self,x,y,width,height,action):
         super().__init__(x,y,width,height,action)
-        self.back_img =pygame.transform.scale_by (pygame.image.load('files/backarrow.png'),4)
+        self.back_img =pygame.transform.scale_by (pygame.image.load('files/assets/backarrow.png'),4)
         self.rect = self.back_img.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -80,13 +80,13 @@ class Leaderboard:
         self.x,self.y = x,y
         self.lbfont = pygame.font.Font('files/mini_pixel-7.ttf', 70)
         self.lbwidth = 400
-        self.lbheight =700
+        self.lbheight = 600
     def draw_leaderboard(self):
         backbutton.imagedraw()
-        leaderboard_rect=pygame.Rect((self.x // 2 - self.lbwidth//2, self.y //2 - self.lbheight//2),(self.lbwidth, self.lbheight))
+        leaderboard_rect=pygame.Rect((self.x // 2 - self.lbwidth//2, self.y //2 - self.lbheight//2 + 30),(self.lbwidth, self.lbheight))
         pygame.draw.rect(screen,(colour_dark),leaderboard_rect)
         lbtitlesurf = self.lbfont.render('Leaderboard',True,(255,255,255))
-        screen.blit(lbtitlesurf,(self.x // 2 - lbtitlesurf.get_width()//2, self.y // 2 - self.lbheight // 2 - 70))
+        screen.blit(lbtitlesurf,(self.x // 2 - lbtitlesurf.get_width()//2, self.y // 2 - self.lbheight // 2-40))
 
 
 
@@ -102,6 +102,10 @@ def settings_action():
 def leaderboardaction():
     global screen_state
     screen_state = 2
+
+def startaction():
+    global screen_state
+    screen_state = 3
 
 
 # instantiations
@@ -135,7 +139,7 @@ while running:
         leaderboardbutton.draw(screen)
         settingsbutton.draw(screen)
         startbutton.draw(screen)
-        text_rect = text_surf.get_rect(center=(width // 2, height // 4 - 50))
+        text_rect = text_surf.get_rect(center=(width // 2, height // 4 - 100))
         screen.blit(text_surf, text_rect)
         
     if screen_state == 1:
@@ -147,23 +151,7 @@ while running:
         backbutton.backaction()
         leaderboard.draw_leaderboard()
     pygame.display.update()
+    if screen_state == 3:
+        quit()
 
 pygame.quit()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
