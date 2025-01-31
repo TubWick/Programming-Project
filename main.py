@@ -1,5 +1,5 @@
 import pygame
-
+import sys
 pygame.init()
 
 res = pygame.display.Info()
@@ -92,7 +92,9 @@ class Leaderboard:
 
 #button actions changing screenstate
 def quit_action():
+    global running
     pygame.quit()
+    sys.exit()
 
 def settings_action():
     global screen_state
@@ -106,6 +108,9 @@ def leaderboardaction():
 def startaction():
     global screen_state
     screen_state = 3
+
+def startgame():
+    import game
 
 
 # instantiations
@@ -150,8 +155,10 @@ while running:
         backbutton.imagedraw()
         backbutton.backaction()
         leaderboard.draw_leaderboard()
-    pygame.display.update()
     if screen_state == 3:
-        quit()
+        startgame()
+    pygame.display.update()
+
 
 pygame.quit()
+sys.exit()

@@ -1,7 +1,8 @@
 import pygame
 from fighter import Fighter
-
 pygame.init()
+
+
 #create game window
 res = 1000,600
 screen = pygame.display.set_mode((res))
@@ -22,8 +23,8 @@ height = screen.get_height()
 
 
 #instantiate fighters
-fighter_1 = Fighter(200,350)
-fighter_2 = Fighter(700,350)
+fighter_1 = Fighter(200,350,"a","d","w")
+fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP")
 
 
 
@@ -37,7 +38,9 @@ while run:
     draw_bg()
 
     #move fighters
-    fighter_1.move(width)
+    fighter_1.move(width,height)
+    fighter_2.move(width,height)
+
     #fighter_2.move()
     #draw fighter
     fighter_1.draw(screen)
