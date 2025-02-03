@@ -1,9 +1,11 @@
 import pygame
 import sys
+import os
+
 pygame.init()
 
-res = pygame.display.Info()
-screen = pygame.display.set_mode((res.current_w, res.current_h))
+res = 1000,600
+screen = pygame.display.set_mode((res))
 colour = (0, 0, 0)
 colour_light = (100, 100, 100)
 colour_dark = (170, 170, 170)
@@ -86,8 +88,7 @@ class Leaderboard:
         leaderboard_rect=pygame.Rect((self.x // 2 - self.lbwidth//2, self.y //2 - self.lbheight//2 + 30),(self.lbwidth, self.lbheight))
         pygame.draw.rect(screen,(colour_dark),leaderboard_rect)
         lbtitlesurf = self.lbfont.render('Leaderboard',True,(255,255,255))
-        screen.blit(lbtitlesurf,(self.x // 2 - lbtitlesurf.get_width()//2, self.y // 2 - self.lbheight // 2-40))
-
+        screen.blit(lbtitlesurf,(self.x // 2 - lbtitlesurf.get_width()//2, self.y // 2 - self.lbheight // 2))
 
 
 #button actions changing screenstate
@@ -101,22 +102,19 @@ def settings_action():
     screen_state = 1
     print("screen state changed to", screen_state)
 
-def leaderboardaction():
+def leaderboard_action():
     global screen_state
     screen_state = 2
 
-def startaction():
-    global screen_state
-    screen_state = 3
-
-def startgame():
-    import game
+def start_action():
+    pygame.display.quit()
+    os.system("python game.py")
 
 
 # instantiations
-startbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 180, button_width, button_height, "Start", quit_action)
+startbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 180, button_width, button_height, "Start", start_action)
 settingsbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 120, button_width, button_height, "Settings", settings_action)
-leaderboardbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 60, button_width, button_height, "Leaderboard", leaderboardaction)
+leaderboardbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 60, button_width, button_height, "Leaderboard", leaderboard_action)
 leaderboard = Leaderboard(width,height)
 quitbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 , button_width, button_height, "Quit", quit_action)
 backbutton = BackButton(10,10,width,height,lambda: back_button.backaction())
@@ -137,7 +135,7 @@ while running:
                 elif startbutton.get_hovered():
                     startbutton.click()
                 elif leaderboardbutton.get_hovered(): 
-                    leaderboardaction()
+                    leaderboard_action()
 
     if screen_state == 0:
         quitbutton.draw(screen)

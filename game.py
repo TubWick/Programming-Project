@@ -23,8 +23,8 @@ height = screen.get_height()
 
 
 #instantiate fighters
-fighter_1 = Fighter(200,350,"a","d","w")
-fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP")
+fighter_1 = Fighter(200,350,"a","d","w","x","c","v")
+fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M")
 
 
 
@@ -38,8 +38,8 @@ while run:
     draw_bg()
 
     #move fighters
-    fighter_1.move(width,height)
-    fighter_2.move(width,height)
+    fighter_1.move(width,height,screen,fighter_2)
+    fighter_2.move(width,height,screen,fighter_1)
 
     #fighter_2.move()
     #draw fighter
