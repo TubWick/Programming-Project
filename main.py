@@ -7,8 +7,8 @@ pygame.init()
 res = 1000,600
 screen = pygame.display.set_mode((res))
 colour = (0, 0, 0)
-colour_light = (100, 100, 100)
-colour_dark = (170, 170, 170)
+colour_dark = (100, 100, 100)
+colour_light = (170, 170, 170)
 
 width = screen.get_width()
 height = screen.get_height()
@@ -31,8 +31,8 @@ class Button:
         self.height = height
         self.text = text
         self.action = action
-        self.colour_normal = colour_dark
-        self.colour_hover = colour_light
+        self.colour_normal = colour_light
+        self.colour_hover = colour_dark
         self.rect=pygame.Rect(self.x,self.y,self.width,self.height)
 
     def draw(self, screen):
@@ -118,7 +118,7 @@ leaderboardbutton = Button(width // 2 - button_width // 2, height // 2 - button_
 leaderboard = Leaderboard(width,height)
 quitbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 , button_width, button_height, "Quit", quit_action)
 backbutton = BackButton(10,10,width,height,lambda: back_button.backaction())
-# game loop
+# main game loop
 running = True
 while running:
     screen.fill(colour)
@@ -126,7 +126,7 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
+        #event handling for buttons
         if event.type == pygame.MOUSEBUTTONDOWN:
                 if quitbutton.get_hovered():
                     quitbutton.click()
@@ -136,7 +136,7 @@ while running:
                     startbutton.click()
                 elif leaderboardbutton.get_hovered(): 
                     leaderboard_action()
-
+    #main menu
     if screen_state == 0:
         quitbutton.draw(screen)
         leaderboardbutton.draw(screen)
@@ -144,15 +144,17 @@ while running:
         startbutton.draw(screen)
         text_rect = text_surf.get_rect(center=(width // 2, height // 4 - 100))
         screen.blit(text_surf, text_rect)
-        
+    #settings
     if screen_state == 1:
         quitbutton.draw(screen)
         backbutton.imagedraw()
         backbutton.backaction()
+    #leaderboard
     if screen_state == 2:
         backbutton.imagedraw()
         backbutton.backaction()
         leaderboard.draw_leaderboard()
+    #main game
     if screen_state == 3:
         startgame()
     pygame.display.update()

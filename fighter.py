@@ -3,8 +3,7 @@ import pygame
 #directional attack - if facing left attack left and vice versa
 #find sprites
 #Healthbar: rectangle, whenever damage tkan it gets smaller
-#once healthbar - complete damage method
-#each attack has different damages - three types of attack - damage will vary depending of character class
+ #each attack has different damages - three types of attack - damage will vary depending of character class
 #       light attack - will be a light jab with little knockback and closer range - good for starting combos
 #       medium attack - will be a punch with some knockback - slightly larger range so connecting will be easier
 #       heavy attack - will be an attack with a lot of knockback - large range but slower to execute
@@ -16,7 +15,8 @@ import pygame
 
 
 class Fighter():
-    def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,health):
+    def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,health, data, sprite_sheet, animation_steps):
+        self.size = WARRIOR_SIZE
         self.rect = pygame.Rect((x,y,80,180))
         self.vel_y = 0
         self.jump = False
@@ -24,11 +24,21 @@ class Fighter():
         self.right = input_right
         self.up = input_up
         self.health = health
+        self.animation_list = self.load_images(sprite_sheet, animation_steps)
         self.attack1 = attack1
         self.attack2 = attack2
         self.attack3 = attack3
         self.flip = False
         self.attacking = False
+
+    def load_images(self,sprite_sheet, animation_steps):
+        #extract images from spritesheet
+        temp_img_list = []
+        for _ in range(animation):
+            temp_img = sprite_sheet.subsurface(0,0,self.size,self.size)
+            temp_img_list.append(temp_img)        
+
+
     def move(self,width,height,surface,target):
         SPEED = 10
         GRAVITY = 2
