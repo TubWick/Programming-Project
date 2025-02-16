@@ -16,7 +16,7 @@ import pygame
 
 class Fighter():
     def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,health, data, sprite_sheet, animation_steps):
-        self.size = WARRIOR_SIZE
+        self.size = data[0]
         self.rect = pygame.Rect((x,y,80,180))
         self.vel_y = 0
         self.jump = False
@@ -33,10 +33,15 @@ class Fighter():
 
     def load_images(self,sprite_sheet, animation_steps):
         #extract images from spritesheet
-        temp_img_list = []
-        for _ in range(animation):
-            temp_img = sprite_sheet.subsurface(0,0,self.size,self.size)
-            temp_img_list.append(temp_img)        
+        animation_list = []
+        for y, animation in enumerate(animation_steps):
+            temp_img_list = []
+            for x in range(animation):
+                temp_img = sprite_sheet.subsurface(x * self.size, y*self.size, self.size, self.size)
+                temp_img_list.append(temp_img)
+            animation_list.append(temp_img_list)
+        print(animation_list)
+        return animation_list
 
 
     def move(self,width,height,surface,target):

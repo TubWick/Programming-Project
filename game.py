@@ -10,17 +10,17 @@ pygame.display.set_caption = ("Fighting game")
 
 
 #define fighter variablles
-WARRIOR_SIZE = 91
-
+FIGHTER_SIZE = 200
+FIGHTER_DATA = [FIGHTER_SIZE]
 
 #create background image
 bg_image= pygame.image.load("files/assets/background.png").convert_alpha()
 
 #load spritesheet
-fighter_sheet = pygame.image.load("files/assets/FINAL SPRITESHEET.png").convert_alpha()
+fighter_sheet = pygame.image.load("files/assets/Normal Fighter Spritesheet.png").convert_alpha()
 
 #number of steps for each animation
-FIGHTER_ANIMATION_STEPS  = [6,3,5,5,4,5,6,5 ]
+FIGHTER_ANIMATION_STEPS  = [6,3,6,5,4,5,6,4]
 
 #set framerate
 clock = pygame.time.Clock()
@@ -41,8 +41,8 @@ height = screen.get_height()
 
 
 #instantiate fighters
-fighter_1 = Fighter(200,350,"a","d","w","x","c","v",100, WARRIOR_SIZE, fighter_sheet, FIGHTER_ANIMATION_STEPS)
-fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M",100)
+fighter_1 = Fighter(200,350,"a","d","w","x","c","v",100, FIGHTER_DATA, fighter_sheet, FIGHTER_ANIMATION_STEPS)
+fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M",100,FIGHTER_DATA, fighter_sheet, FIGHTER_ANIMATION_STEPS)
 
 
 
@@ -62,7 +62,6 @@ while run:
     fighter_1.move(width,height,screen,fighter_2)
     fighter_2.move(width,height,screen,fighter_1)
 
-    #fighter_2.move()
     #draw fighter
     fighter_1.draw(screen)
     fighter_2.draw(screen)
