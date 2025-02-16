@@ -11,7 +11,9 @@ pygame.display.set_caption = ("Fighting game")
 
 #define fighter variablles
 FIGHTER_SIZE = 200
-FIGHTER_DATA = [FIGHTER_SIZE]
+FIGHTER_SCALE = 3
+FIGHTER_OFFSET = [90,66]
+FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE,FIGHTER_OFFSET]
 
 #create background image
 bg_image= pygame.image.load("files/assets/background.png").convert_alpha()
