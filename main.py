@@ -1,10 +1,10 @@
 import pygame
 import sys
 import os
-
+from classes.characterselection import Charselectionscreen
 pygame.init()
 
-res = 1000,600
+res = 1280,720
 screen = pygame.display.set_mode((res))
 colour = (0, 0, 0)
 colour_dark = (100, 100, 100)
@@ -85,7 +85,7 @@ class Leaderboard:
         self.lbheight = 600
     def draw_leaderboard(self):
         backbutton.imagedraw()
-        leaderboard_rect=pygame.Rect((self.x // 2 - self.lbwidth//2, self.y //2 - self.lbheight//2 + 30),(self.lbwidth, self.lbheight))
+        leaderboard_rect=pygame.Rect((self.x // 2 - self.lbwidth//2, self.y //2 - self.lbheight//2),(self.lbwidth, self.lbheight))
         pygame.draw.rect(screen,(colour_dark),leaderboard_rect)
         lbtitlesurf = self.lbfont.render('Leaderboard',True,(255,255,255))
         screen.blit(lbtitlesurf,(self.x // 2 - lbtitlesurf.get_width()//2, self.y // 2 - self.lbheight // 2))
@@ -100,23 +100,23 @@ def quit_action():
 def settings_action():
     global screen_state
     screen_state = 1
-    print("screen state changed to", screen_state)
 
 def leaderboard_action():
     global screen_state
     screen_state = 2
 
 def start_action():
-    pygame.display.quit()
-    os.system("python game.py")
+    global screen_state
+    screen_state = 3
 
+                                                                                            #120
 
 # instantiations
-startbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 180, button_width, button_height, "Start", start_action)
-settingsbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 120, button_width, button_height, "Settings", settings_action)
-leaderboardbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 60, button_width, button_height, "Leaderboard", leaderboard_action)
+startbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 120, button_width, button_height, "Start", start_action)
+settingsbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 60, button_width, button_height, "Settings", settings_action)
+leaderboardbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2, button_width, button_height, "Leaderboard", leaderboard_action)
 leaderboard = Leaderboard(width,height)
-quitbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 , button_width, button_height, "Quit", quit_action)
+quitbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 + 60, button_width, button_height, "Quit", quit_action)
 backbutton = BackButton(10,10,width,height,lambda: back_button.backaction())
 # main game loop
 running = True
@@ -142,7 +142,7 @@ while running:
         leaderboardbutton.draw(screen)
         settingsbutton.draw(screen)
         startbutton.draw(screen)
-        text_rect = text_surf.get_rect(center=(width // 2, height // 4 - 100))
+        text_rect = text_surf.get_rect(center=(width // 2, height // 4 - 50))
         screen.blit(text_surf, text_rect)
     #settings
     if screen_state == 1:
@@ -156,7 +156,8 @@ while running:
         leaderboard.draw_leaderboard()
     #main game
     if screen_state == 3:
-        startgame()
+        backbutton.imagedraw()
+        backbutton.backaction()
     pygame.display.update()
 
 

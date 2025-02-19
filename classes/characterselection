@@ -1,0 +1,56 @@
+import pygame
+import sys
+import os
+
+pygame.init()
+
+
+res = 1280,620
+screen = pygame.display.set_mode((res))
+colour = (0, 0, 0)
+colour_dark = (100, 100, 100)
+colour_light = (170, 170, 170)
+
+width = screen.get_width()
+height = screen.get_height()
+
+button_width = 220
+button_height = 50
+
+smallfont = pygame.font.Font('files/mini_pixel-7.ttf',50)
+shenttpuro = pygame.font.Font('files/Shenttpuro Font.ttf',100)
+text_surf = shenttpuro.render( 'First Strike',True, (255, 10, 10) )
+
+lighticon = pygame.image.load("files/assets/lighticon.png").convert_alpha()
+
+
+class Charselectionscreen():
+    def __init__(self,x,y):
+        self.lighticon = pygame.image.load("files/assets/lighticon.png").convert_alpha()
+        self.mediumicon = pygame.image.load("files/assets/mediumicon.png").convert_alpha()
+        self.heavyicon = pygame.image.load("files/assets/heavyicon.png").convert_alpha()
+        self.x = x
+        self.y = y
+        self.l_rect = pygame.Rect((self.x-480,self.y-200,400,450))
+        self.m_rect = pygame.Rect((self.x-50,self.y-200,400,450))
+        self.h_rect = pygame.Rect((self.x+370,self.y-200,400,450))
+        
+    def draw_cs_screen(self):
+        screen.blit(pygame.transform.scale(self.lighticon, (400, 450)), (self.x-480, self.y-200))
+        pygame.draw.rect(screen, (255,255,255), self.l_rect)
+        screen.blit(pygame.transform.scale(self.mediumicon, (400,450)), (self.x-50, self.y-200))
+        pygame.draw.rect(screen, (255,255,255), self.m_rect)
+        screen.blit(pygame.transform.scale(self.heavyicon, (400,450)), (self.x + 370, self.y-200))
+        pygame.draw.rect(screen, (255,255,255), self.h_rect)
+
+run = True
+while run:
+    screen.fill(colour)
+    characterselection = Charselectionscreen(500,200)
+    characterselection.draw_cs_screen()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+
+    pygame.display.update()
+
