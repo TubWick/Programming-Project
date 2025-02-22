@@ -15,8 +15,8 @@ import pygame
 
 
 class Fighter():
-    def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,health, data, sprite_sheet, animation_steps):
-        self.size = data[0]
+    def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,health,):
+        #self.size = data[0]
         self.rect = pygame.Rect((x,y,80,180))
         self.vel_y = 0
         self.jump = False
@@ -24,24 +24,24 @@ class Fighter():
         self.right = input_right
         self.up = input_up
         self.health = health
-        self.animation_list = self.load_images(sprite_sheet, animation_steps)
+        #self.animation_list = self.load_images(sprite_sheet, animation_steps)
         self.attack1 = attack1
         self.attack2 = attack2
         self.attack3 = attack3
         self.flip = False
         self.attacking = False
 
-    def load_images(self,sprite_sheet, animation_steps):
-        #extract images from spritesheet
-        animation_list = []
-        for y, animation in enumerate(animation_steps):
-            temp_img_list = []
-            for x in range(animation):
-                temp_img = sprite_sheet.subsurface(x * self.size, y*self.size, self.size, self.size)
-                temp_img_list.append(temp_img)
-            animation_list.append(temp_img_list)
-        print(animation_list)
-        return animation_list
+    #def load_images(self,sprite_sheet, animation_steps):
+  #      #extract images from spritesheet
+   #     animation_list = []
+    #    for y, animation in enumerate(animation_steps):
+     #       temp_img_list = []
+      #      for x in range(animation):
+       #         temp_img = sprite_sheet.subsurface(x * self.size, y*self.size, self.size, self.size)
+        #        temp_img_list.append(temp_img)
+    #        animation_list.append(temp_img_list)
+     #   print(animation_list)
+      #  return animation_list
 
 
     def move(self,width,height,surface,target):

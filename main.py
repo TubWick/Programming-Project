@@ -17,7 +17,7 @@ button_height = 50
 
 smallfont = pygame.font.Font('files/mini_pixel-7.ttf',50)
 shenttpuro = pygame.font.Font('files/Shenttpuro Font.ttf',100)
-text_surf = shenttpuro.render( 'Foo Fighters',True, (255, 10, 10) )
+text_surf = shenttpuro.render( 'First Strike',True, (255, 10, 10) )
 
 screen_state = 0
 
