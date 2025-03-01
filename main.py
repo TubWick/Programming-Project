@@ -130,7 +130,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         #event handling for buttons
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if screen_state == 0:
                 if quitbutton.get_hovered():
                     quitbutton.click()
                 elif settingsbutton.get_hovered(): 
@@ -139,17 +139,7 @@ while running:
                     startbutton.click()
                 elif leaderboardbutton.get_hovered(): 
                     leaderboard_action()
-        #event handling for title
-        if screen_state == 0:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if quitbutton.get_hovered():
-                    quitbutton.click()
-                elif settingsbutton.get_hovered():
-                    settingsbutton.click()
-                elif startbutton.get_hovered():
-                    startbutton.click()
-                elif leaderboardbutton.get_hovered():
-                    leaderboard_action()
+    
     #main menu
     if screen_state == 0:
         quitbutton.draw(screen)
@@ -160,17 +150,17 @@ while running:
         screen.blit(text_surf, text_rect)
         
     #settings
-    elif screen_state == 1:
+    if screen_state == 1:
         backbutton.imagedraw()
         backbutton.backaction()
         settingsbutton.draw(screen)
     #leaderboard
-    elif screen_state == 2:
+    if screen_state == 2:
         backbutton.imagedraw()
         backbutton.backaction()
         leaderboard.draw_leaderboard()
     #main game
-    elif screen_state == 3:
+    if screen_state == 3:
         print(screen_state)
         characterselection.draw_cs_screen()
         characterselection.ifhover()

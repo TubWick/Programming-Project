@@ -28,6 +28,7 @@ class Fighter():
         self.health = health
         self.animation_list = self.load_images(sprite_sheet, animation_steps)
         self.action = 0#0: idle, 1: walk, 2: jump, 3: attack1, 4: attack2, 5: attack3, 6: hit, 7: death
+        self.update_time= pygame.time.get_ticks()
         self.frame_index = 0
         self.image = self.animation_list[self.action][self.frame_index]
         self.attack1 = attack1
@@ -97,7 +98,20 @@ class Fighter():
         #update player position
         self.rect.x += dx
         self.rect.y += dy
-
+    
+    
+    def frame_handler(self):
+        self.image = self.animation_list[self.action][self.frame_index]
+        animation_cooldown = 250
+        if pygame.time.get_ticks() - self.update_time > animation_cooldown:
+            self.update_time = pygame.time.get_ticks()
+            self.frame_index += 1
+            if self.frame_index >= len(self.animation_list[self.action]):
+                self.frame_index = 0
+                self.attacking = False
+                self.action = 0
+    
+    
     def attack(self,surface,target):
         self.attacking = True
         attack_hitbox = pygame.Rect(self.rect.centerx - (2*self.rect.width * self.flip), self.rect.y,2 * self.rect.width, self.rect.height)
@@ -111,5 +125,6 @@ class Fighter():
         self.health -= damage_dealt
 
     def draw(self,surface):
+        img = pygame.transform.flip(self.image, self.flip, False)
         pygame.draw.rect(surface, (255,255,255), self.rect)
-        surface.blit(self.image, (self.rect.x - (self.offset[0] * self.image_scale), self.rect.y - (self.offset[1] * self.image_scale)))
+        surface.blit(img, (self.rect.x - (self.offset[0] * self.image_scale), self.rect.y - (self.offset[1] * self.image_scale)))
