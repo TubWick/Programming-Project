@@ -1,10 +1,9 @@
 import pygame
 import sys
 import os
-
 pygame.init()
-
-res = 1000,600
+from characterselection import Charselectionscreen
+res = 1280,720
 screen = pygame.display.set_mode((res))
 colour = (0, 0, 0)
 colour_dark = (100, 100, 100)
@@ -69,7 +68,6 @@ class BackButton(Button):
     def imagedraw(self):
         screen.blit(self.back_img,(self.rect.x,self.rect.y))
 
-
 #class leaderboard
 #open to csv
 #add the score to the list of scores in the csv
@@ -85,39 +83,44 @@ class Leaderboard:
         self.lbheight = 600
     def draw_leaderboard(self):
         backbutton.imagedraw()
-        leaderboard_rect=pygame.Rect((self.x // 2 - self.lbwidth//2, self.y //2 - self.lbheight//2 + 30),(self.lbwidth, self.lbheight))
+        leaderboard_rect=pygame.Rect((self.x // 2 - self.lbwidth//2, self.y //2 - self.lbheight//2),(self.lbwidth, self.lbheight))
         pygame.draw.rect(screen,(colour_dark),leaderboard_rect)
         lbtitlesurf = self.lbfont.render('Leaderboard',True,(255,255,255))
         screen.blit(lbtitlesurf,(self.x // 2 - lbtitlesurf.get_width()//2, self.y // 2 - self.lbheight // 2))
 
-
 #button actions changing screenstate
+
+
+    
+
 def quit_action():
+    global screen_state
     global running
+    print("screen_state: ", screen_state)
     pygame.quit()
     sys.exit()
 
 def settings_action():
     global screen_state
     screen_state = 1
-    print("screen state changed to", screen_state)
 
 def leaderboard_action():
     global screen_state
     screen_state = 2
 
 def start_action():
-    pygame.display.quit()
-    os.system("python game.py")
-
+    global screen_state
+    screen_state = 3
+                                                                                            #120
 
 # instantiations
-startbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 180, button_width, button_height, "Start", start_action)
-settingsbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 120, button_width, button_height, "Settings", settings_action)
-leaderboardbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 60, button_width, button_height, "Leaderboard", leaderboard_action)
+startbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 120, button_width, button_height, "Start", start_action)
+settingsbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 60, button_width, button_height, "Settings", settings_action)
+leaderboardbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2, button_width, button_height, "Leaderboard", leaderboard_action)
 leaderboard = Leaderboard(width,height)
-quitbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 , button_width, button_height, "Quit", quit_action)
+quitbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 + 60, button_width, button_height, "Quit", quit_action)
 backbutton = BackButton(10,10,width,height,lambda: back_button.backaction())
+characterselection = Charselectionscreen(500, 200)
 # main game loop
 running = True
 while running:
@@ -136,27 +139,48 @@ while running:
                     startbutton.click()
                 elif leaderboardbutton.get_hovered(): 
                     leaderboard_action()
+        #event handling for title
+        if screen_state == 0:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if quitbutton.get_hovered():
+                    quitbutton.click()
+                elif settingsbutton.get_hovered():
+                    settingsbutton.click()
+                elif startbutton.get_hovered():
+                    startbutton.click()
+                elif leaderboardbutton.get_hovered():
+                    leaderboard_action()
     #main menu
     if screen_state == 0:
         quitbutton.draw(screen)
         leaderboardbutton.draw(screen)
         settingsbutton.draw(screen)
         startbutton.draw(screen)
-        text_rect = text_surf.get_rect(center=(width // 2, height // 4 - 100))
+        text_rect = text_surf.get_rect(center=(width // 2, height // 4 - 50))
         screen.blit(text_surf, text_rect)
+        
     #settings
-    if screen_state == 1:
-        quitbutton.draw(screen)
+    elif screen_state == 1:
         backbutton.imagedraw()
         backbutton.backaction()
+        settingsbutton.draw(screen)
     #leaderboard
-    if screen_state == 2:
+    elif screen_state == 2:
         backbutton.imagedraw()
         backbutton.backaction()
         leaderboard.draw_leaderboard()
     #main game
-    if screen_state == 3:
-        startgame()
+    elif screen_state == 3:
+        print(screen_state)
+        characterselection.draw_cs_screen()
+        characterselection.ifhover()
+        characterselection.ifclicked(event)
+        characterselection.draw_selected_outline()
+        backbutton.imagedraw()
+        backbutton.backaction()
+
+        
+
     pygame.display.update()
 
 

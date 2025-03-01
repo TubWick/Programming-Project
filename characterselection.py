@@ -134,4 +134,8 @@ class Charselectionscreen():
   #  characterselection.draw_selected_outline()
  #   characterselection.turn_counter()
 
+<<<<<<< HEAD
 #    pygame.display.update()
+=======
+#    pygame.display.update()
+>>>>>>> 0406220fc986a35845d0bdb7b1f263ebf7164a19
