@@ -65,15 +65,16 @@ class Fighter():
             if key[pygame.key.key_code(self.up)] and self.jump == False:
                 self.vel_y = -30
                 self.jump = True
+                self.moving = False
             #attacking keys
             if key[pygame.key.key_code(self.attack1)]:
-                self.action = 3
+                self.action_handler(2)
                 self.attack(surface,target,finisher_target)
             if key[pygame.key.key_code(self.attack2)]:
-                self.action = 4
+                self.action_handler(3)
                 self.attack(surface,target,finisher_target)    
             if key[pygame.key.key_code(self.attack3)]:
-                self.action = 5
+                self.action_handler(4)
                 self.attack(surface,target,finisher_target)
                 
 
@@ -102,13 +103,16 @@ class Fighter():
     
     
     def frame_handler(self):
-        #because theres a different number of frames between action 0 and action 1 and so on
-        #if im at frame 6 of my running but try to change to my idle, it will crash as it tries to acess frame index 6 of my idle, which doesnt exist.
-        if self.moving == True:
-            #unfortunately, this will not work, I will need to look at my frame index as well.
-            self.action = 1
+        #new method ensures that i restart the next action from the start of the frame index, stopping the index out of range error. 
+        #must make sure that jump is before moving, otherwise when I jump it causes problems
+        if self.jump == True:
+            self.action_handler(7)
+        elif self.moving == True:
+            self.action_handler(1)
+        else:
+            self.action_handler(0)
         self.image = self.animation_list[self.action][self.frame_index]
-        animation_cooldown = 50
+        animation_cooldown = 100
         if pygame.time.get_ticks() - self.update_time > animation_cooldown:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
@@ -116,6 +120,15 @@ class Fighter():
                 self.frame_index = 0
                 self.attacking = False
                 self.action = 0
+    
+    def action_handler(self,new_action):
+        #check if new action is different to previous one
+        if new_action != self.action:
+            self.action = new_action
+            #reset the frame index
+            self.frame_index = 0
+            #reset the update time
+            self.update_time = pygame.time.get_ticks()
     
     def finisher_meter(self,finisher_value):
         if self.finisher_value < 200:
