@@ -109,10 +109,10 @@ class Fighter():
             self.action_handler(7)
         elif self.moving == True:
             self.action_handler(1)
-        else:
-            self.action_handler(0)
+        #else:
+            #self.action_handler(0)
         self.image = self.animation_list[self.action][self.frame_index]
-        animation_cooldown = 100
+        animation_cooldown = 125
         if pygame.time.get_ticks() - self.update_time > animation_cooldown:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
@@ -140,6 +140,7 @@ class Fighter():
         if attack_hitbox.colliderect(target.rect):
             target.damage(10)
             finisher_target.finisher_meter(10)
+            target.action_handler(5)
     
             print("hit")
             print(target.health)
@@ -155,5 +156,5 @@ class Fighter():
     def draw(self,surface):
         #have to create a seperate flip image (img) so that players face each other if they pass
         img = pygame.transform.flip(self.image, self.flip, False)
-        pygame.draw.rect(surface, (255,255,255), self.rect)
+        #pygame.draw.rect(surface, (255,255,255), self.rect)
         surface.blit(img, (self.rect.x - (self.offset[0] * self.image_scale), self.rect.y - (self.offset[1] * self.image_scale)))

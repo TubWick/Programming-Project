@@ -8,12 +8,13 @@ res = 1000,600
 screen = pygame.display.set_mode((res))
 pygame.display.set_caption = ("Fighting game")
 
-
+colour_dark = (100, 100, 100)
+colour_light = (170, 170, 170)
 #define fighter variablles
 FIGHTER_SIZE = 200
-FIGHTER_SCALE = 3
+FIGHTER_SCALE = 4
 #manual offset so that the sprite is within the hitbox
-FIGHTER_OFFSET = [90,66]
+FIGHTER_OFFSET = [90,86]
 FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE,FIGHTER_OFFSET]
 #create background image
 bg_image= pygame.image.load("files/assets/background.png").convert_alpha()
@@ -22,7 +23,7 @@ bg_image= pygame.image.load("files/assets/background.png").convert_alpha()
 fighter_sheet = pygame.image.load("files/assets/Normal Fighter Spritesheet.png").convert_alpha()
 
 #number of steps for each animation
-FIGHTER_ANIMATION_STEPS  = [4,6,3,5,5,1,5,6]
+FIGHTER_ANIMATION_STEPS  = [4,6,3,5,5,1,5,3]
 
 #set framerate
 clock = pygame.time.Clock()
@@ -34,12 +35,14 @@ def draw_bg():
 #function for drawing healthbar
 def draw_healthbar(health, x,y):
     health_ratio = health/100
+    pygame.draw.rect(screen, (139,0,0), (x-3,y-3,406,36))
     pygame.draw.rect(screen, (139,0,0), (x,y,400,30))
     pygame.draw.rect(screen, (255,0,0), (x,y,400*health_ratio,30))
     
 def draw_finisherbar(finisher_value, x, y):
-    pygame.draw.rect(screen, (255,0,0), (x,y,200,30))
-    pygame.draw.rect(screen, (30,0,240), (x,y,0+finisher_value,30))
+    pygame.draw.rect(screen,(colour_dark), (x-3,y-3,206,26))
+    pygame.draw.rect(screen,(26, 43, 68), (x,y,200,20))
+    pygame.draw.rect(screen, (59, 130, 246), (x,y,0+finisher_value,20))
 
 
 
