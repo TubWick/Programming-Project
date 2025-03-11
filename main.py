@@ -33,7 +33,7 @@ class Button:
         self.colour_normal = colour_light
         self.colour_hover = colour_dark
         self.rect=pygame.Rect(self.x,self.y,self.width,self.height)
-
+    #draw button
     def draw(self, screen):
         mouse = pygame.mouse.get_pos()
         if self.rect.collidepoint(mouse):
@@ -44,7 +44,7 @@ class Button:
         text_surf = smallfont.render(self.text, True, (0, 0, 0))
         text_rect = text_surf.get_rect(center=(self.x + self.width // 2, self.y + self.height // 2))
         screen.blit(text_surf, text_rect)
-
+    # if button hovered
     def get_hovered(self):
         mouse = pygame.mouse.get_pos()
         return self.x <= mouse[0] <= self.x + self.width and self.y <= mouse[1] <= self.y + self.height

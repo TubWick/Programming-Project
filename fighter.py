@@ -9,11 +9,6 @@ import pygame
 #       heavy attack - will be an attack with a lot of knockback - large range but slower to execute
 #
 
-
-
-
-
-
 class Fighter():
     def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,health, data, sprite_sheet, animation_steps):
         self.size = data[0]
@@ -22,10 +17,12 @@ class Fighter():
         self.rect = pygame.Rect((x,y,80,180))
         self.vel_y = 0
         self.jump = False
+        self.moving = False
         self.left = input_left
         self.right = input_right
         self.up = input_up
         self.health = health
+        self.finisher_value = 0
         self.animation_list = self.load_images(sprite_sheet, animation_steps)
         self.action = 0#0: idle, 1: walk, 2: jump, 3: attack1, 4: attack2, 5: attack3, 6: hit, 7: death
         self.update_time= pygame.time.get_ticks()
@@ -49,32 +46,36 @@ class Fighter():
         return animation_list
 
 
-    def move(self,width,height,surface,target):
+    def move(self,width,height,surface,target,finisher_target):
         SPEED = 10
         GRAVITY = 2
         dx = 0
         dy = 0
+        self.moving = False
         #get keypresses
         key = pygame.key.get_pressed()
         if self.attacking == False:
             #movement key presses
             if key[pygame.key.key_code(self.left)]:
                 dx = - SPEED
+                self.moving = True
             if key[pygame.key.key_code(self.right)]:
                 dx = SPEED
+                self.moving = True
             if key[pygame.key.key_code(self.up)] and self.jump == False:
                 self.vel_y = -30
                 self.jump = True
             #attacking keys
             if key[pygame.key.key_code(self.attack1)]:
-                self.attack(surface,target)
-                #print("attack1 used!!!!")
+                self.action = 3
+                self.attack(surface,target,finisher_target)
             if key[pygame.key.key_code(self.attack2)]:
-                self.attack(surface,target)
-                #print("attack2 used!!!!")
+                self.action = 4
+                self.attack(surface,target,finisher_target)    
             if key[pygame.key.key_code(self.attack3)]:
-                self.attack(surface,target)
-                #print("attack3 used!!!!")
+                self.action = 5
+                self.attack(surface,target,finisher_target)
+                
 
         #apply gravity
         self.vel_y += GRAVITY
@@ -101,8 +102,13 @@ class Fighter():
     
     
     def frame_handler(self):
+        #because theres a different number of frames between action 0 and action 1 and so on
+        #if im at frame 6 of my running but try to change to my idle, it will crash as it tries to acess frame index 6 of my idle, which doesnt exist.
+        if self.moving == True:
+            #unfortunately, this will not work, I will need to look at my frame index as well.
+            self.action = 1
         self.image = self.animation_list[self.action][self.frame_index]
-        animation_cooldown = 250
+        animation_cooldown = 50
         if pygame.time.get_ticks() - self.update_time > animation_cooldown:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
@@ -111,20 +117,30 @@ class Fighter():
                 self.attacking = False
                 self.action = 0
     
+    def finisher_meter(self,finisher_value):
+        if self.finisher_value < 200:
+            self.finisher_value += 20
     
-    def attack(self,surface,target):
+    def attack(self,surface,target,finisher_target):
         self.attacking = True
         attack_hitbox = pygame.Rect(self.rect.centerx - (2*self.rect.width * self.flip), self.rect.y,2 * self.rect.width, self.rect.height)
         if attack_hitbox.colliderect(target.rect):
             target.damage(10)
+            finisher_target.finisher_meter(10)
+    
             print("hit")
             print(target.health)
+        
+        
         pygame.draw.rect(surface, (0,255,0), attack_hitbox)
 
     def damage(self,damage_dealt):
         self.health -= damage_dealt
 
+    
+
     def draw(self,surface):
+        #have to create a seperate flip image (img) so that players face each other if they pass
         img = pygame.transform.flip(self.image, self.flip, False)
         pygame.draw.rect(surface, (255,255,255), self.rect)
         surface.blit(img, (self.rect.x - (self.offset[0] * self.image_scale), self.rect.y - (self.offset[1] * self.image_scale)))
