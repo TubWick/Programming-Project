@@ -1,7 +1,5 @@
 import pygame
 #to do:
-#directional attack - if facing left attack left and vice versa
-#find sprites
 #Healthbar: rectangle, whenever damage tkan it gets smaller
  #each attack has different damages - three types of attack - damage will vary depending of character class
 #       light attack - will be a light jab with little knockback and closer range - good for starting combos
@@ -31,8 +29,10 @@ class Fighter():
         self.attack1 = attack1
         self.attack2 = attack2
         self.attack3 = attack3
+        self.attack_type = 0
         self.flip = False
         self.attacking = False
+        self.health_status = True
 
     def load_images(self,sprite_sheet, animation_steps):
         #extract images from spritesheet
@@ -44,7 +44,6 @@ class Fighter():
                 temp_img_list.append(pygame.transform.scale(temp_img, (self.size * self.image_scale, self.size * self.image_scale)))
             animation_list.append(temp_img_list)
         return animation_list
-
 
     def move(self,width,height,surface,target,finisher_target):
         SPEED = 10
@@ -66,18 +65,22 @@ class Fighter():
                 self.vel_y = -30
                 self.jump = True
                 self.moving = False
+
             #attacking keys
             if key[pygame.key.key_code(self.attack1)]:
+                self.attack_type == 1
                 self.action_handler(2)
                 self.attack(surface,target,finisher_target)
             if key[pygame.key.key_code(self.attack2)]:
+                self.attack_type == 2
                 self.action_handler(3)
-                self.attack(surface,target,finisher_target)    
+                self.attack(surface,target,finisher_target)
             if key[pygame.key.key_code(self.attack3)]:
+                self.attack_type == 3
                 self.action_handler(4)
                 self.attack(surface,target,finisher_target)
-                
 
+              
         #apply gravity
         self.vel_y += GRAVITY
         dy += self.vel_y
@@ -109,8 +112,13 @@ class Fighter():
             self.action_handler(7)
         elif self.moving == True:
             self.action_handler(1)
-        #else:
-            #self.action_handler(0)
+        elif self.attacking == True:
+            if self.attack_type == 1:
+                self.action_handler(3)
+            if self.attack_type == 2:   
+                self.action_handler(4)
+            if self.attack_type == 3:
+                self.action_handler(5)
         self.image = self.animation_list[self.action][self.frame_index]
         animation_cooldown = 125
         if pygame.time.get_ticks() - self.update_time > animation_cooldown:
@@ -120,7 +128,7 @@ class Fighter():
                 self.frame_index = 0
                 self.attacking = False
                 self.action = 0
-    
+            
     def action_handler(self,new_action):
         #check if new action is different to previous one
         if new_action != self.action:
@@ -141,7 +149,7 @@ class Fighter():
             target.damage(10)
             finisher_target.finisher_meter(10)
             target.action_handler(5)
-    
+            self.attacking = True
             print("hit")
             print(target.health)
         
@@ -150,8 +158,8 @@ class Fighter():
 
     def damage(self,damage_dealt):
         self.health -= damage_dealt
-
-    
+        if self.health <= 0:
+            self.action_handler(6)
 
     def draw(self,surface):
         #have to create a seperate flip image (img) so that players face each other if they pass

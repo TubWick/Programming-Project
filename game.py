@@ -1,36 +1,45 @@
 import pygame
 from fighter import Fighter
+from characterselection import Charselectionscreen
 pygame.init()
 
 
 #create game window
 res = 1000,600
 screen = pygame.display.set_mode((res))
-pygame.display.set_caption = ("Fighting game")
+pygame.display.set_caption("Fighting game")
 
 colour_dark = (100, 100, 100)
 colour_light = (170, 170, 170)
-#define fighter variablles
+#define fighter variables
 FIGHTER_SIZE = 200
+#the scale for each sprite
 FIGHTER_SCALE = 4
+
 #manual offset so that the sprite is within the hitbox
-FIGHTER_OFFSET = [90,86]
-FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE,FIGHTER_OFFSET]
+MEDIUM_FIGHTER_OFFSET = [90,83]
+HEAVY_FIGHTER_OFFSET = [90,80]
+
+MEDIUM_FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE, MEDIUM_FIGHTER_OFFSET]
+HEAVY_FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE, HEAVY_FIGHTER_OFFSET]
 #create background image
 bg_image= pygame.image.load("files/assets/background.png").convert_alpha()
 
 #load spritesheet
-fighter_sheet = pygame.image.load("files/assets/Normal Fighter Spritesheet.png").convert_alpha()
-
+#light_fighter_sheet = pygame.image.load("files/assets/Light Fighter Spritesheet.png").convert_alpha()
+medium_fighter_sheet = pygame.image.load("files/assets/Normal Fighter Spritesheet.png").convert_alpha()
+heavy_fighter_sheet = pygame.image.load("files/assets/Heavy Fighter Spritesheet.png").convert_alpha()
 #number of steps for each animation
-FIGHTER_ANIMATION_STEPS  = [4,6,3,5,5,1,5,3]
-
+medium_animation_steps  = [4,6,2,3,3,1,5,3,1]
+heavy_animation_steps =   [4,4,3,3,3,1,4,3,1]
 #set framerate
 clock = pygame.time.Clock()
 
 def draw_bg():
-    scaled_bg = pygame.transform.scale(bg_image, (width,height))
-    screen.blit(scaled_bg, (0,0))
+    width = screen.get_width()
+    height = screen.get_height()
+    scaled_bg = pygame.transform.scale(bg_image, (width, height))
+    screen.blit(scaled_bg, (0, 0))
 
 #function for drawing healthbar
 def draw_healthbar(health, x,y):
@@ -51,8 +60,8 @@ height = screen.get_height()
 
 
 #instantiate fighters
-fighter_1 = Fighter(200,350,"a","d","w","x","c","v",100,FIGHTER_DATA, fighter_sheet, FIGHTER_ANIMATION_STEPS)
-fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M",100,FIGHTER_DATA, fighter_sheet, FIGHTER_ANIMATION_STEPS)
+fighter_1 = Fighter(200,350,"a","d","w","x","c","v",100,MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
+fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M",100,HEAVY_FIGHTER_DATA, heavy_fighter_sheet, heavy_animation_steps)
 
 
 

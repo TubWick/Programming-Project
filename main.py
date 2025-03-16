@@ -90,9 +90,6 @@ class Leaderboard:
 
 #button actions changing screenstate
 
-
-    
-
 def quit_action():
     global screen_state
     global running
@@ -132,13 +129,17 @@ while running:
         #event handling for buttons
         if screen_state == 0:
                 if quitbutton.get_hovered():
-                    quitbutton.click()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        quitbutton.click()
                 elif settingsbutton.get_hovered(): 
-                    settingsbutton.click()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        settingsbutton.click()
                 elif startbutton.get_hovered():
-                    startbutton.click()
-                elif leaderboardbutton.get_hovered(): 
-                    leaderboard_action()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        startbutton.click()
+                elif leaderboardbutton.get_hovered():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        leaderboardbutton.click()
     
     #main menu
     if screen_state == 0:
