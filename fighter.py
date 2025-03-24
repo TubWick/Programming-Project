@@ -46,8 +46,8 @@ class Fighter():
         return animation_list
 
     def move(self,width,height,surface,target,finisher_target):
-        SPEED = 10
-        GRAVITY = 2
+        SPEED = 7
+        GRAVITY = 3
         dx = 0
         dy = 0
         self.moving = False
@@ -67,18 +67,19 @@ class Fighter():
                 self.moving = False
 
             #attacking keys
-            if key[pygame.key.key_code(self.attack1)]:
-                self.attack_type == 1
-                self.action_handler(2)
-                self.attack(surface,target,finisher_target)
-            if key[pygame.key.key_code(self.attack2)]:
-                self.attack_type == 2
-                self.action_handler(3)
-                self.attack(surface,target,finisher_target)
-            if key[pygame.key.key_code(self.attack3)]:
-                self.attack_type == 3
-                self.action_handler(4)
-                self.attack(surface,target,finisher_target)
+            if not self.jump:
+                if key[pygame.key.key_code(self.attack1)]:
+                    self.attack_type == 1
+                    self.action_handler(2)
+                    self.attack(surface,target,finisher_target)
+                if key[pygame.key.key_code(self.attack2)]:
+                    self.attack_type == 2
+                    self.action_handler(3)
+                    self.attack(surface,target,finisher_target)
+                if key[pygame.key.key_code(self.attack3)]:
+                    self.attack_type == 3
+                    self.action_handler(4)
+                    self.attack(surface,target,finisher_target)
 
               
         #apply gravity
@@ -144,7 +145,7 @@ class Fighter():
     
     def attack(self,surface,target,finisher_target):
         self.attacking = True
-        attack_hitbox = pygame.Rect(self.rect.centerx - (2*self.rect.width * self.flip), self.rect.y,2 * self.rect.width, self.rect.height)
+        attack_hitbox = pygame.Rect(self.rect.centerx - (2*self.rect.width * self.flip), self.rect.y,2 * self.rect.width+100, self.rect.height)
         if attack_hitbox.colliderect(target.rect):
             target.damage(10)
             finisher_target.finisher_meter(10)
@@ -154,7 +155,7 @@ class Fighter():
             print(target.health)
         
         
-        pygame.draw.rect(surface, (0,255,0), attack_hitbox)
+        #pygame.draw.rect(surface, (0,255,0), attack_hitbox)
 
     def damage(self,damage_dealt):
         self.health -= damage_dealt

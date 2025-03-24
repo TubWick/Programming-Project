@@ -149,7 +149,7 @@ while running:
         startbutton.draw(screen)
         text_rect = text_surf.get_rect(center=(width // 2, height // 4 - 50))
         screen.blit(text_surf, text_rect)
-        
+        print("my heart goes out to you")
     #settings
     if screen_state == 1:
         backbutton.imagedraw()

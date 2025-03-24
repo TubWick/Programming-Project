@@ -3,12 +3,37 @@ from fighter import Fighter
 from characterselection import Charselectionscreen
 pygame.init()
 
+class Timer:
+    def __init__(self):
+        self.start_time = 0
+        self.active = False
+
+    def activate(self):
+        self.active = True
+        self.start_time = pygame.time.get_ticks()
+    
+    def deactivate(self):
+        self.active = False 
+        self.start_time = 0
+    
+    def update(self):
+        if self.active:
+            current_time = pygame.time.get_ticks()
+            time_surf= smallfont.render(str((pygame.time.get_ticks() - (match_timer.start_time)) // 1000), True, (255,255,255)).convert_alpha()
+            time_surf_outline= smallfont.render(str((pygame.time.get_ticks() - (match_timer.start_time)) // 1000), True, (0,0,0)).convert_alpha()
+            screen.blit(time_surf_outline,(width//2 - 7, height//2 - 297))
+            screen.blit(time_surf,(width//2 - 10, height//2 - 300))
+
+match_timer = Timer()
+match_timer.activate()
+
 
 #create game window
 res = 1000,600
 screen = pygame.display.set_mode((res))
 pygame.display.set_caption("Fighting game")
 
+smallfont = pygame.font.Font('files/mini_pixel-7.ttf',75)
 colour_dark = (100, 100, 100)
 colour_light = (170, 170, 170)
 #define fighter variables
@@ -18,7 +43,7 @@ FIGHTER_SCALE = 4
 
 #manual offset so that the sprite is within the hitbox
 MEDIUM_FIGHTER_OFFSET = [90,83]
-HEAVY_FIGHTER_OFFSET = [90,80]
+HEAVY_FIGHTER_OFFSET = [80,80]
 
 MEDIUM_FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE, MEDIUM_FIGHTER_OFFSET]
 HEAVY_FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE, HEAVY_FIGHTER_OFFSET]
@@ -64,7 +89,6 @@ fighter_1 = Fighter(200,350,"a","d","w","x","c","v",100,MEDIUM_FIGHTER_DATA, med
 fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M",100,HEAVY_FIGHTER_DATA, heavy_fighter_sheet, heavy_animation_steps)
 
 
-
 #game loop
 run = True
 while run:
@@ -94,6 +118,8 @@ while run:
     fighter_1.draw(screen)
     fighter_2.draw(screen)
 
+    if match_timer.active:
+        match_timer.update()
 
     #event handler
     for event in pygame.event.get():
