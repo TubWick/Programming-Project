@@ -1,3 +1,13 @@
+
+#errors i encountered x = didnt fix v = did! 
+#x - when i attack whilst moving, become trapped in walking animation
+#v - can move whilst hit
+#v - interrupting attacks with an attack wouldnt play hit animation
+#v - finisher meter goes to wrong person
+#v - hit animation goes to other person
+#v - hit animation would break other animations
+
+
 import pygame
 #to do:
 #Healthbar: rectangle, whenever damage tkan it gets smaller
@@ -22,7 +32,7 @@ class Fighter():
         self.health = health
         self.finisher_value = 0
         self.animation_list = self.load_images(sprite_sheet, animation_steps)
-        self.action = 0#0: idle, 1: walk, 2: jump, 3: attack1, 4: attack2, 5: attack3, 6: hit, 7: death
+        self.action = 0#0: idle, 1: walk, 2: l_attack, 3: m_attack, 4: h_attack, 5: hit,6:death, 7: jump, 8: block
         self.update_time= pygame.time.get_ticks()
         self.frame_index = 0
         self.image = self.animation_list[self.action][self.frame_index]
@@ -33,6 +43,10 @@ class Fighter():
         self.flip = False
         self.attacking = False
         self.health_status = True
+        self.attack_cooldown = 0
+        self.hit = False
+
+        
 
     def load_images(self,sprite_sheet, animation_steps):
         #extract images from spritesheet
@@ -45,15 +59,16 @@ class Fighter():
             animation_list.append(temp_img_list)
         return animation_list
 
-    def move(self,width,height,surface,target,finisher_target):
+    def move(self,width,height,surface,target):
         SPEED = 7
         GRAVITY = 3
         dx = 0
         dy = 0
         self.moving = False
+        self.attack_type = 0
         #get keypresses
         key = pygame.key.get_pressed()
-        if self.attacking == False:
+        if self.attacking == False and self.hit == False:
             #movement key presses
             if key[pygame.key.key_code(self.left)]:
                 dx = - SPEED
@@ -69,17 +84,17 @@ class Fighter():
             #attacking keys
             if not self.jump:
                 if key[pygame.key.key_code(self.attack1)]:
-                    self.attack_type == 1
-                    self.action_handler(2)
-                    self.attack(surface,target,finisher_target)
+                    self.attack_type = 1
+                    #self.action_handler(2)
+                    self.attack(surface,target)
                 if key[pygame.key.key_code(self.attack2)]:
-                    self.attack_type == 2
-                    self.action_handler(3)
-                    self.attack(surface,target,finisher_target)
+                    self.attack_type = 2
+                    #self.action_handler(3)
+                    self.attack(surface,target)
                 if key[pygame.key.key_code(self.attack3)]:
-                    self.attack_type == 3
-                    self.action_handler(4)
-                    self.attack(surface,target,finisher_target)
+                    self.attack_type = 3
+                    #self.action_handler(4)
+                    self.attack(surface,target)
 
               
         #apply gravity
@@ -104,22 +119,31 @@ class Fighter():
         #update player position
         self.rect.x += dx
         self.rect.y += dy
+
+        #apply attack cooldown
+
+        if self.attack_cooldown > 0:
+            self.attack_cooldown -=1
     
     
     def frame_handler(self):
         #new method ensures that i restart the next action from the start of the frame index, stopping the index out of range error. 
         #must make sure that jump is before moving, otherwise when I jump it causes problems
-        if self.jump == True:
+        if self.hit == True:
+            self.action_handler(5)
+        elif self.jump == True:
             self.action_handler(7)
         elif self.moving == True:
             self.action_handler(1)
         elif self.attacking == True:
             if self.attack_type == 1:
+                self.action_handler(2)
+            elif self.attack_type == 2:   
                 self.action_handler(3)
-            if self.attack_type == 2:   
+            elif self.attack_type == 3:
                 self.action_handler(4)
-            if self.attack_type == 3:
-                self.action_handler(5)
+        else:
+            self.action_handler(0)
         self.image = self.animation_list[self.action][self.frame_index]
         animation_cooldown = 125
         if pygame.time.get_ticks() - self.update_time > animation_cooldown:
@@ -127,8 +151,15 @@ class Fighter():
             self.frame_index += 1
             if self.frame_index >= len(self.animation_list[self.action]):
                 self.frame_index = 0
-                self.attacking = False
-                self.action = 0
+                if self.action in [2,3,4]:
+                    self.attacking = False
+                    self.attack_cooldown = 10
+                if self.hit == True:
+                    self.hit = False
+                    #interrupt attack if attacked during wind up
+                    self.attacking = False
+                    self.attack_cooldown = 10
+                
             
     def action_handler(self,new_action):
         #check if new action is different to previous one
@@ -143,16 +174,16 @@ class Fighter():
         if self.finisher_value < 200:
             self.finisher_value += 20
     
-    def attack(self,surface,target,finisher_target):
-        self.attacking = True
-        attack_hitbox = pygame.Rect(self.rect.centerx - (2*self.rect.width * self.flip), self.rect.y,2 * self.rect.width+100, self.rect.height)
-        if attack_hitbox.colliderect(target.rect):
-            target.damage(10)
-            finisher_target.finisher_meter(10)
-            target.action_handler(5)
+    def attack(self,surface,target):
+        if self.attack_cooldown == 0:
             self.attacking = True
-            print("hit")
-            print(target.health)
+            attack_hitbox = pygame.Rect(self.rect.centerx - (2*self.rect.width * self.flip), self.rect.y,2 * self.rect.width+100, self.rect.height)
+            if attack_hitbox.colliderect(target.rect):
+                target.damage(10)
+                self.finisher_meter(10)
+                target.hit = True
+                print("hit")
+                print(target.health)
         
         
         #pygame.draw.rect(surface, (0,255,0), attack_hitbox)

@@ -42,19 +42,22 @@ FIGHTER_SIZE = 200
 FIGHTER_SCALE = 4
 
 #manual offset so that the sprite is within the hitbox
+LIGHT_FIGHTER_OFFSET = [90,83]
 MEDIUM_FIGHTER_OFFSET = [90,83]
 HEAVY_FIGHTER_OFFSET = [80,80]
 
 MEDIUM_FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE, MEDIUM_FIGHTER_OFFSET]
 HEAVY_FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE, HEAVY_FIGHTER_OFFSET]
+LIGHT_FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE, LIGHT_FIGHTER_OFFSET]
 #create background image
 bg_image= pygame.image.load("files/assets/background.png").convert_alpha()
 
 #load spritesheet
-#light_fighter_sheet = pygame.image.load("files/assets/Light Fighter Spritesheet.png").convert_alpha()
+light_fighter_sheet = pygame.image.load("files/assets/Light Fighter Spritesheet.png").convert_alpha()
 medium_fighter_sheet = pygame.image.load("files/assets/Normal Fighter Spritesheet.png").convert_alpha()
 heavy_fighter_sheet = pygame.image.load("files/assets/Heavy Fighter Spritesheet.png").convert_alpha()
 #number of steps for each animation
+light_animation_steps = [4,5,2,2,3,1,5,3,1]
 medium_animation_steps  = [4,6,2,3,3,1,5,3,1]
 heavy_animation_steps =   [4,4,3,3,3,1,4,3,1]
 #set framerate
@@ -86,7 +89,7 @@ height = screen.get_height()
 
 #instantiate fighters
 fighter_1 = Fighter(200,350,"a","d","w","x","c","v",100,MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
-fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M",100,HEAVY_FIGHTER_DATA, heavy_fighter_sheet, heavy_animation_steps)
+fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M",100,LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
 
 
 #game loop
@@ -106,9 +109,10 @@ while run:
     draw_finisherbar(fighter_1.finisher_value,20,60)
     draw_finisherbar(fighter_2.finisher_value,780,60)
 
+
     #move fighters
-    fighter_1.move(width,height,screen,fighter_2,fighter_1)
-    fighter_2.move(width,height,screen,fighter_1,fighter_2)
+    fighter_1.move(width,height,screen,fighter_2)
+    fighter_2.move(width,height,screen,fighter_1)
 
     #frame handling
     fighter_1.frame_handler()
