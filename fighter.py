@@ -45,6 +45,7 @@ class Fighter():
         self.health_status = True
         self.attack_cooldown = 0
         self.hit = False
+        self.alive = True
 
         
 
@@ -129,36 +130,44 @@ class Fighter():
     def frame_handler(self):
         #new method ensures that i restart the next action from the start of the frame index, stopping the index out of range error. 
         #must make sure that jump is before moving, otherwise when I jump it causes problems
-        if self.hit == True:
-            self.action_handler(5)
+        if self.health <= 0:
+            self.alive = False
+            self.action_handler(6)#death
+        elif self.hit == True:
+            self.action_handler(5)#hitstun
         elif self.jump == True:
-            self.action_handler(7)
+            self.action_handler(7)#jump
         elif self.moving == True:
-            self.action_handler(1)
+            self.action_handler(1)#walk
         elif self.attacking == True:
             if self.attack_type == 1:
-                self.action_handler(2)
+                self.action_handler(2)#lattack
             elif self.attack_type == 2:   
-                self.action_handler(3)
+                self.action_handler(3)#mattack
             elif self.attack_type == 3:
-                self.action_handler(4)
+                self.action_handler(4)#hattack
         else:
-            self.action_handler(0)
+            self.action_handler(0)#idle
+    
         self.image = self.animation_list[self.action][self.frame_index]
-        animation_cooldown = 125
+        animation_cooldown = 150
         if pygame.time.get_ticks() - self.update_time > animation_cooldown:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
             if self.frame_index >= len(self.animation_list[self.action]):
-                self.frame_index = 0
-                if self.action in [2,3,4]:
-                    self.attacking = False
-                    self.attack_cooldown = 10
-                if self.hit == True:
-                    self.hit = False
-                    #interrupt attack if attacked during wind up
-                    self.attacking = False
-                    self.attack_cooldown = 10
+                #check to see if player is dead
+                if self.alive == False:
+                    self.frame_index = len(self.animation_list[self.action]) -1
+                else:
+                    self.frame_index = 0
+                    if self.action in [2,3,4]:
+                        self.attacking = False
+                        self.attack_cooldown = 10
+                    if self.hit == True:
+                        self.hit = False
+                        #interrupt attack if attacked during wind up
+                        self.attacking = False
+                        self.attack_cooldown = 10
                 
             
     def action_handler(self,new_action):

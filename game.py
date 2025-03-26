@@ -34,6 +34,7 @@ screen = pygame.display.set_mode((res))
 pygame.display.set_caption("Fighting game")
 
 smallfont = pygame.font.Font('files/mini_pixel-7.ttf',75)
+gameoverfont = pygame.font.Font('files/mini_pixel-7.ttf',150)
 colour_dark = (100, 100, 100)
 colour_light = (170, 170, 170)
 #define fighter variables
@@ -75,11 +76,24 @@ def draw_healthbar(health, x,y):
     pygame.draw.rect(screen, (139,0,0), (x-3,y-3,406,36))
     pygame.draw.rect(screen, (139,0,0), (x,y,400,30))
     pygame.draw.rect(screen, (255,0,0), (x,y,400*health_ratio,30))
-    
 def draw_finisherbar(finisher_value, x, y):
     pygame.draw.rect(screen,(colour_dark), (x-3,y-3,206,26))
     pygame.draw.rect(screen,(26, 43, 68), (x,y,200,20))
     pygame.draw.rect(screen, (59, 130, 246), (x,y,0+finisher_value,20))
+
+def end_match(health,x,y):
+    if health <= 0:
+        current_time = pygame.time.get_ticks()
+        flash_duration = 500
+        if current_time // flash_duration % 2 == 0:      
+            end_text_body = gameoverfont.render("K.O", True, ((255,10,20))).convert_alpha()
+            end_text_outline = gameoverfont.render("K.O", True, (0,0,0)).convert_alpha()
+            end_text_fill = gameoverfont.render("K.O", True, (255,255,0)).convert_alpha()
+
+            screen.blit(end_text_outline,(x+45,y-20))
+            screen.blit(end_text_fill,(x+40, y-20))
+            screen.blit(end_text_body,(x+35, y-20))
+        
 
 
 
@@ -88,7 +102,7 @@ height = screen.get_height()
 
 
 #instantiate fighters
-fighter_1 = Fighter(200,350,"a","d","w","x","c","v",100,MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
+fighter_1 = Fighter(200,350,"a","d","w","x","c","v",0,MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
 fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M",100,LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
 
 
@@ -124,7 +138,9 @@ while run:
 
     if match_timer.active:
         match_timer.update()
-
+    #check for end of match
+    end_match(fighter_1.health, 400, 300)
+    end_match(fighter_2.health, 400, 300)
     #event handler
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
