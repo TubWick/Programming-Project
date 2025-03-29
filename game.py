@@ -85,6 +85,8 @@ def end_match(health,x,y):
     if health <= 0:
         current_time = pygame.time.get_ticks()
         flash_duration = 500
+        #takes the current time, divs it by 2 to get either 2 or a 1, and then mod it by 2 to get a one or a 0
+        #eg: 500(ms currentime) // 500(flashduration) % 2 = 1  
         if current_time // flash_duration % 2 == 0:      
             end_text_body = gameoverfont.render("K.O", True, ((255,10,20))).convert_alpha()
             end_text_outline = gameoverfont.render("K.O", True, (0,0,0)).convert_alpha()
@@ -100,10 +102,9 @@ def end_match(health,x,y):
 width = screen.get_width()
 height = screen.get_height()
 
-
 #instantiate fighters
-fighter_1 = Fighter(200,350,"a","d","w","x","c","v",0,MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
-fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M",100,LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
+fighter_1 = Fighter(200,350,"a","d","w","x","c","v","f",100,MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
+fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M","l",100,LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
 
 
 #game loop

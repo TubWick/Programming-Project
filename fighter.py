@@ -1,7 +1,7 @@
 
 #errors i encountered x = didnt fix v = did! 
-#x - when i attack whilst moving, become trapped in walking animation
-#v - can move whilst hit
+#v - when i attack whilst moving, become trapped in walking animation
+#v/x - can move whilst hit
 #v - interrupting attacks with an attack wouldnt play hit animation
 #v - finisher meter goes to wrong person
 #v - hit animation goes to other person
@@ -9,8 +9,7 @@
 
 
 import pygame
-#to do:
-#Healthbar: rectangle, whenever damage tkan it gets smaller
+#to do
  #each attack has different damages - three types of attack - damage will vary depending of character class
 #       light attack - will be a light jab with little knockback and closer range - good for starting combos
 #       medium attack - will be a punch with some knockback - slightly larger range so connecting will be easier
@@ -18,14 +17,16 @@ import pygame
 #
 
 class Fighter():
-    def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,health, data, sprite_sheet, animation_steps):
+    def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,block,health, data, sprite_sheet, animation_steps):
         self.size = data[0]
         self.image_scale = data[1]
         self.offset = data[2]
         self.rect = pygame.Rect((x,y,80,180))
+        self.block_effect = pygame.image.load("files/assets/dustcloud.png").convert_alpha()
         self.vel_y = 0
         self.jump = False
         self.moving = False
+        self.blocking = False
         self.left = input_left
         self.right = input_right
         self.up = input_up
@@ -39,6 +40,7 @@ class Fighter():
         self.attack1 = attack1
         self.attack2 = attack2
         self.attack3 = attack3
+        self.block = block
         self.attack_type = 0
         self.flip = False
         self.attacking = False
@@ -66,10 +68,13 @@ class Fighter():
         dx = 0
         dy = 0
         self.moving = False
+        self.blocking = False
         self.attack_type = 0
         #get keypresses
         key = pygame.key.get_pressed()
         if self.attacking == False and self.hit == False:
+            if key[pygame.key.key_code(self.block)]:
+                self.blocking = True
             #movement key presses
             if key[pygame.key.key_code(self.left)]:
                 dx = - SPEED
@@ -137,15 +142,18 @@ class Fighter():
             self.action_handler(5)#hitstun
         elif self.jump == True:
             self.action_handler(7)#jump
-        elif self.moving == True:
-            self.action_handler(1)#walk
         elif self.attacking == True:
             if self.attack_type == 1:
                 self.action_handler(2)#lattack
             elif self.attack_type == 2:   
                 self.action_handler(3)#mattack
-            elif self.attack_type == 3:
-                self.action_handler(4)#hattack
+            #elif self.attack_type == 3:
+                #self.action_handler(4)#hattack
+        
+        elif self.moving == True:
+            self.action_handler(1)#walk
+        elif self.blocking == True:
+            self.action_handler(8)
         else:
             self.action_handler(0)#idle
     
@@ -188,11 +196,18 @@ class Fighter():
             self.attacking = True
             attack_hitbox = pygame.Rect(self.rect.centerx - (2*self.rect.width * self.flip), self.rect.y,2 * self.rect.width+100, self.rect.height)
             if attack_hitbox.colliderect(target.rect):
-                target.damage(10)
-                self.finisher_meter(10)
-                target.hit = True
-                print("hit")
-                print(target.health)
+                if target.blocking == False:
+                    target.damage(10)
+                    self.finisher_meter(10)
+                    target.hit = True
+                    print("hit")
+                    print(target.health)
+                else:
+                    print("blocked")
+                    self.finisher_meter(3)
+                    
+                    surface.blit(self.block_effect, (self.rect.x - 50, self.rect.y))
+                
         
         
         #pygame.draw.rect(surface, (0,255,0), attack_hitbox)
