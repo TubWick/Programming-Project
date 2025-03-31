@@ -1,6 +1,9 @@
 import pygame
 from fighter import Fighter
 from characterselection import Charselectionscreen
+from pygame import mixer
+
+mixer.init()
 pygame.init()
 
 class Timer:
@@ -32,6 +35,8 @@ match_timer.activate()
 res = 1000,600
 screen = pygame.display.set_mode((res))
 pygame.display.set_caption("Fighting game")
+
+
 
 smallfont = pygame.font.Font('files/mini_pixel-7.ttf',75)
 gameoverfont = pygame.font.Font('files/mini_pixel-7.ttf',150)
@@ -85,7 +90,7 @@ def end_match(health,x,y):
     if health <= 0:
         current_time = pygame.time.get_ticks()
         flash_duration = 500
-        #takes the current time, divs it by 2 to get either 2 or a 1, and then mod it by 2 to get a one or a 0
+        #takes the current time, divs it by 2 t get either 2 or a 1, and then mod it by 2 to get a one or a 0
         #eg: 500(ms currentime) // 500(flashduration) % 2 = 1  
         if current_time // flash_duration % 2 == 0: 
             end_text_body = gameoverfont.render("K.O", True, ((255,10,20))).convert_alpha()
@@ -96,7 +101,6 @@ def end_match(health,x,y):
             screen.blit(end_text_fill,(x+40, y-20))
             screen.blit(end_text_body,(x+35, y-20))
         
-
 
 
 width = screen.get_width()
@@ -110,24 +114,21 @@ fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M","l",100,LIGHT_FIGHTE
 #game loop
 run = True
 while run:
-
     clock.tick(60)
+
+    # Retrieve all events once per frame
+    events = pygame.event.get()
 
     #draw background
     draw_bg()
     
     #show player health
-    draw_healthbar(fighter_1.health,20,20)
-    draw_healthbar(fighter_2.health,580,20)
+    draw_healthbar(fighter_1.health, 20, 20)
+    draw_healthbar(fighter_2.health, 580, 20)
    
     #draw player finisher
-    draw_finisherbar(fighter_1.finisher_value,20,60)
-    draw_finisherbar(fighter_2.finisher_value,780,60)
-
-
-    #move fighters
-    fighter_1.move(width,height,screen,fighter_2)
-    fighter_2.move(width,height,screen,fighter_1)
+    draw_finisherbar(fighter_1.finisher_value, 20, 60)
+    draw_finisherbar(fighter_2.finisher_value, 780, 60)
 
     #frame handling
     fighter_1.frame_handler()
@@ -137,17 +138,23 @@ while run:
     fighter_1.draw(screen)
     fighter_2.draw(screen)
 
+    #move fighters
+    fighter_1.move(width, height, screen, fighter_2, events)
+    fighter_2.move(width, height, screen, fighter_1, events)
+
     if match_timer.active:
         match_timer.update()
+
     #check for end of match
     end_match(fighter_1.health, 400, 300)
     end_match(fighter_2.health, 400, 300)
+
     #event handler
-    for event in pygame.event.get():
+    for event in events:
         if event.type == pygame.QUIT:
             run = False
 
-    #update dislay
+    #update display
     pygame.display.update()
 
 pygame.quit()

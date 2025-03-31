@@ -8,22 +8,32 @@ import pygame
 #v - hit animation goes to other person
 #v - hit animation would break other animations
 #v - attacking a blocking fighter sometimes locks person who attacks the blocking fighter into walking animation
+#x - parry window is not working - attacks cannot be parried
+#x - 
 
 #to do
  #each attack has different damages - three types of attack - damage will vary depending of character class
-#       light attack - will be a light jab with little knockback and closer range - good for starting combos
-#       medium attack - will be a punch with some knockback - slightly larger range so connecting will be easier
-#       heavy attack - will be an attack with a lot of knockback - large range but slower to execute
-#       finisher - will be a powerful attack that can only be used when the finisher meter is full 
+# v      light attack - will be a light jab with little knockback and closer range - good for starting combos
+# v      medium attack - will be a punch with some knockback - slightly larger range so connecting will be easier
+# v      heavy attack - will be an attack with a lot of knockback - large range but slower to execute
+# x      finisher - will be a powerful attack that can only be used when the finisher meter is full 
+# x      parry - will be a defensive move that can be used if you block an attack quickly, will grant significant finisher meter if you know the timing
+# v      blocking - will be a defensive move that negates damage taken from attacks, can be broken by heavy attacks
+
 
 class Fighter():
     def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,block,health, data, sprite_sheet, animation_steps):
         self.parry_window = False
+        self.parry_timer = 0
+        self.parry_duration = 3000
         self.size = data[0]
         self.image_scale = data[1]
         self.offset = data[2]
         self.rect = pygame.Rect((x,y,80,180))
         self.block_effect = pygame.image.load("files/assets/dustcloud.png").convert_alpha()
+        self.block_effect = pygame.transform.scale(self.block_effect, (100, 100))
+        self.parry_effect = pygame.image.load("files/assets/parry_icon.png").convert_alpha()
+        self.parry_effect = pygame.transform.scale(self.parry_effect, (200, 200))  # Scale parry effect correctly
         self.vel_y = 0
         self.jump = False
         self.moving = False
@@ -49,6 +59,24 @@ class Fighter():
         self.attack_cooldown = 0
         self.hit = False
         self.alive = True
+        #load audio
+        pygame.mixer.music.load("files/audio/background_music.mp3")
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(-1) 
+        self.light_attack_sound = pygame.mixer.Sound("files/audio/lighthit.wav")
+        self.light_attack_sound.set_volume(0.5)
+        self.medium_attack_sound = pygame.mixer.Sound("files/audio/mediumhit.wav")
+        self.medium_attack_sound.set_volume(0.5)
+        self.heavy_attack_sound = pygame.mixer.Sound("files/audio/heavyhit.wav")
+        self.heavy_attack_sound.set_volume(0.5)
+        self.finisher_attack_sound = pygame.mixer.Sound("files/audio/finisher.wav")
+        self.finisher_attack_sound.set_volume(0.5)
+        self.blocked_attack_sound = pygame.mixer.Sound("files/audio/blockedatk.wav")
+        self.blocked_attack_sound.set_volume(0.5)
+        self.parried_attack_sound = pygame.mixer.Sound("files/audio/parriedatk.wav")
+        self.parried_attack_sound.set_volume(0.5)
+        self.death_effect_sound = pygame.mixer.Sound("files/audio/death.wav")
+        self.death_effect_sound.set_volume(0.5)
 
         
 
@@ -63,7 +91,7 @@ class Fighter():
             animation_list.append(temp_img_list)
         return animation_list
 
-    def move(self,width,height,surface,target):
+    def move(self, width, height, surface, target, events):
         SPEED = 7
         GRAVITY = 3
         dx = 0
@@ -71,73 +99,83 @@ class Fighter():
         self.moving = False
         self.blocking = False
         self.attack_type = 0
-        self.parry_window = False
-        #get keypresses         
+
+        # Get keypresses
         key = pygame.key.get_pressed()
-        for event in pygame.event.get():
+
+        # Handle events specific to this fighter
+        for event in events:  # Pass the event list to this method
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.key.key_code(self.block):
-                    self.parry_window = True
-        if self.attacking == False and self.hit == False:
+                    if not self.parry_window:  # Only activate parry if it's not already active
+                        self.parry_window = True
+                        self.parry_timer = pygame.time.get_ticks()  # Start the parry timer
+                        print(f"Parry window activated for fighter at {self.rect.topleft}")
+
+        # Check if the parry window has expired
+        if self.parry_window and pygame.time.get_ticks() - self.parry_timer > self.parry_duration:
+            self.parry_window = False
+            print(f"Parry window expired for fighter at {self.rect.topleft}")
+            print(self.parry_window)
+        if not self.attacking and not self.hit:
             if key[pygame.key.key_code(self.block)]:
                 self.blocking = True
-                
-            #movement key presses
+
+            # Movement key presses
             if key[pygame.key.key_code(self.left)]:
-                dx = - SPEED
+                dx = -SPEED
                 self.moving = True
             if key[pygame.key.key_code(self.right)]:
                 dx = SPEED
                 self.moving = True
-            if key[pygame.key.key_code(self.up)] and self.jump == False:
+            if key[pygame.key.key_code(self.up)] and not self.jump:
                 self.vel_y = -30
                 self.jump = True
                 self.moving = False
 
-            #attacking keys
+            # Attacking keys
             if not self.jump:
                 if key[pygame.key.key_code(self.attack1)]:
                     self.attack_type = 1
-                    #self.action_handler(2)
-                    self.attack(surface,target)
+                    self.light_attack_sound.play()
+                    self.attack(surface, target)
                 if key[pygame.key.key_code(self.attack2)]:
                     self.attack_type = 2
-                    #self.action_handler(3)
-                    self.attack(surface,target)
+                    self.medium_attack_sound.play()
+                    self.attack(surface, target)
                 if key[pygame.key.key_code(self.attack3)]:
                     self.attack_type = 3
-                    #self.action_handler(4)
-                    self.attack(surface,target)
+                    self.heavy_attack_sound.play()
+                    self.attack(surface, target)
 
-              
-        #apply gravity
+        # Apply gravity
         self.vel_y += GRAVITY
         dy += self.vel_y
-            #check screen boundaries
+
+        # Check screen boundaries
         if self.rect.left + dx < 0:
             dx = -self.rect.left
         if self.rect.right + dx > width:
-            dx = width -self.rect.right
+            dx = width - self.rect.right
         if self.rect.bottom + dy > height - 60:
-            self.rect_vel = 0
+            self.vel_y = 0
             self.jump = False
             dy = height - 60 - self.rect.bottom
-        
-        #check players face each other
+
+        # Check if players face each other
         if target.rect.centerx > self.rect.centerx:
             self.flip = False
         else:
             self.flip = True
-        
-        #update player position
+
+        # Update player position
         self.rect.x += dx
         self.rect.y += dy
 
-        #apply attack cooldown
-
+        # Apply attack cooldown
         if self.attack_cooldown > 0:
-            self.attack_cooldown -=1
-    
+            self.attack_cooldown -= 1
+
     def frame_handler(self):
         #new method ensures that i restart the next action from the start of the frame index, stopping the index out of range error. 
         #must make sure that jump is before moving, otherwise when I jump it causes problems
@@ -197,24 +235,43 @@ class Fighter():
         if self.finisher_value < 200:
             self.finisher_value += 20
     
-    def attack(self,surface,target):
+    def attack(self, surface, target):
         if self.attack_cooldown == 0:
             self.attacking = True
-            attack_hitbox = pygame.Rect(self.rect.centerx - (2*self.rect.width * self.flip), self.rect.y,2 * self.rect.width+100, self.rect.height)
+            attack_hitbox = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y, 2 * self.rect.width + 100, self.rect.height)
             if attack_hitbox.colliderect(target.rect):
-                if target.blocking == False:
+                if not target.blocking and not target.parry_window:
                     target.damage(10)
                     self.finisher_meter(10)
                     target.hit = True
                     print("hit")
                     print(target.health)
-                if self.parry_window == True:
-                    self.finisher_meter(20)
+
+                # Ensure parry only happens when parry_window is active and target is not blocking
+                elif target.parry_window:
+                    target.finisher_meter(20)
                     print("parried")
-                    target.hit = True
-                    target.attack_cooldown = 30
-                if target.blocking == False:
+                    self.parried_attack_sound.play()
+                    self.hit = True
+                    self.attack_cooldown = 30
+                    if self.flip == False: 
+                        parry_effect_x = target.rect.centerx
+                    else:
+                        parry_effect_x = target.rect.centerx  - 70
+                    parry_effect_y = target.rect.top - 60
+                    surface.blit(self.parry_effect, (parry_effect_x, parry_effect_y))
+
+                elif target.blocking:
                     print("blocked")
+                    self.blocked_attack_sound.play()
+                    # Adjust block effect position to align with the side of the target's rect
+                    if self.flip == False: 
+                        block_effect_x = target.rect.left - 50
+                    else:
+                        block_effect_x = target.rect.right - 50  
+    #                block_effect_y = target.rect.top - 70
+     #               surface.blit(self.block_effect, (block_effect_x, block_effect_y))
+                    # Fix animations bugging
                     if self.attack_type == 1:
                         self.action_handler(2)
                     elif self.attack_type == 2:
@@ -222,28 +279,29 @@ class Fighter():
                     else:
                         self.action_handler(4)
 
-        #pygame.draw.rect(surface, (0,255,0), attack_hitbox)
+        # pygame.draw.rect(surface, (0,255,0), attack_hitbox)
 
     def damage(self,damage_dealt):
         self.health -= damage_dealt
         if self.health <= 0:
             self.action_handler(6)
 
-    def draw(self,surface):
-        #have to create a seperate flip image (img) so that players face each other if they pass
+    def draw(self, surface):
+        # Create a separate flipped image (img) so that players face each other if they pass
         img = pygame.transform.flip(self.image, self.flip, False)
-        #pygame.draw.rect(surface, (255,255,255), self.rect)
+        # pygame.draw.rect(surface, (255,255,255), self.rect)
         surface.blit(img, (self.rect.x - (self.offset[0] * self.image_scale), self.rect.y - (self.offset[1] * self.image_scale)))
-        if self.parry_window == True:
+
+        # Render the parry box only if the parry window is active for this fighter
+        if self.parry_window:
             if self.flip:
                 parry_x = self.rect.x - 100
             else:
                 parry_x = self.rect.x + 100
             parry_y = self.rect.y - 50
             parry_rect = pygame.Rect(parry_x, parry_y, 20, 180)
-            pygame.draw.rect(surface, (255, 0, 0), parry_rect)  
-            self.parry_window = False
-            
+            pygame.draw.rect(surface, (255, 0, 0), parry_rect)  # Draw the parry box
 
 
-                    
+
+
