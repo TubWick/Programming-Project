@@ -87,7 +87,7 @@ def end_match(health,x,y):
         flash_duration = 500
         #takes the current time, divs it by 2 to get either 2 or a 1, and then mod it by 2 to get a one or a 0
         #eg: 500(ms currentime) // 500(flashduration) % 2 = 1  
-        if current_time // flash_duration % 2 == 0:      
+        if current_time // flash_duration % 2 == 0: 
             end_text_body = gameoverfont.render("K.O", True, ((255,10,20))).convert_alpha()
             end_text_outline = gameoverfont.render("K.O", True, (0,0,0)).convert_alpha()
             end_text_fill = gameoverfont.render("K.O", True, (255,255,0)).convert_alpha()

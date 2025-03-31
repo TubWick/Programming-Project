@@ -1,3 +1,4 @@
+import pygame
 
 #errors i encountered x = didnt fix v = did! 
 #v - when i attack whilst moving, become trapped in walking animation
@@ -6,18 +7,18 @@
 #v - finisher meter goes to wrong person
 #v - hit animation goes to other person
 #v - hit animation would break other animations
+#v - attacking a blocking fighter sometimes locks person who attacks the blocking fighter into walking animation
 
-
-import pygame
 #to do
  #each attack has different damages - three types of attack - damage will vary depending of character class
 #       light attack - will be a light jab with little knockback and closer range - good for starting combos
 #       medium attack - will be a punch with some knockback - slightly larger range so connecting will be easier
 #       heavy attack - will be an attack with a lot of knockback - large range but slower to execute
-#
+#       finisher - will be a powerful attack that can only be used when the finisher meter is full 
 
 class Fighter():
     def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,block,health, data, sprite_sheet, animation_steps):
+        self.parry_window = False
         self.size = data[0]
         self.image_scale = data[1]
         self.offset = data[2]
@@ -70,11 +71,17 @@ class Fighter():
         self.moving = False
         self.blocking = False
         self.attack_type = 0
-        #get keypresses
+        self.parry_window = False
+        #get keypresses         
         key = pygame.key.get_pressed()
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.key.key_code(self.block):
+                    self.parry_window = True
         if self.attacking == False and self.hit == False:
             if key[pygame.key.key_code(self.block)]:
                 self.blocking = True
+                
             #movement key presses
             if key[pygame.key.key_code(self.left)]:
                 dx = - SPEED
@@ -131,7 +138,6 @@ class Fighter():
         if self.attack_cooldown > 0:
             self.attack_cooldown -=1
     
-    
     def frame_handler(self):
         #new method ensures that i restart the next action from the start of the frame index, stopping the index out of range error. 
         #must make sure that jump is before moving, otherwise when I jump it causes problems
@@ -147,8 +153,8 @@ class Fighter():
                 self.action_handler(2)#lattack
             elif self.attack_type == 2:   
                 self.action_handler(3)#mattack
-            #elif self.attack_type == 3:
-                #self.action_handler(4)#hattack
+            elif self.attack_type == 3:
+                self.action_handler(4)#hattack
         
         elif self.moving == True:
             self.action_handler(1)#walk
@@ -202,14 +208,20 @@ class Fighter():
                     target.hit = True
                     print("hit")
                     print(target.health)
-                else:
+                if self.parry_window == True:
+                    self.finisher_meter(20)
+                    print("parried")
+                    target.hit = True
+                    target.attack_cooldown = 30
+                if target.blocking == False:
                     print("blocked")
-                    self.finisher_meter(3)
-                    
-                    surface.blit(self.block_effect, (self.rect.x - 50, self.rect.y))
-                
-        
-        
+                    if self.attack_type == 1:
+                        self.action_handler(2)
+                    elif self.attack_type == 2:
+                        self.action_handler(3)
+                    else:
+                        self.action_handler(4)
+
         #pygame.draw.rect(surface, (0,255,0), attack_hitbox)
 
     def damage(self,damage_dealt):
@@ -222,3 +234,16 @@ class Fighter():
         img = pygame.transform.flip(self.image, self.flip, False)
         #pygame.draw.rect(surface, (255,255,255), self.rect)
         surface.blit(img, (self.rect.x - (self.offset[0] * self.image_scale), self.rect.y - (self.offset[1] * self.image_scale)))
+        if self.parry_window == True:
+            if self.flip:
+                parry_x = self.rect.x - 100
+            else:
+                parry_x = self.rect.x + 100
+            parry_y = self.rect.y - 50
+            parry_rect = pygame.Rect(parry_x, parry_y, 20, 180)
+            pygame.draw.rect(surface, (255, 0, 0), parry_rect)  
+            self.parry_window = False
+            
+
+
+                    
