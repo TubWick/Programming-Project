@@ -107,7 +107,7 @@ width = screen.get_width()
 height = screen.get_height()
 
 #instantiate fighters
-fighter_1 = Fighter(200,350,"a","d","w","x","c","v","f",100,MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
+fighter_1 = Fighter(200,350,"a","d","w","x","c","v","f",100,HEAVY_FIGHTER_DATA, heavy_fighter_sheet, heavy_animation_steps)
 fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M","l",100,LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
 
 
