@@ -63,9 +63,9 @@ light_fighter_sheet = pygame.image.load("files/assets/Light Fighter Spritesheet.
 medium_fighter_sheet = pygame.image.load("files/assets/Normal Fighter Spritesheet.png").convert_alpha()
 heavy_fighter_sheet = pygame.image.load("files/assets/Heavy Fighter Spritesheet.png").convert_alpha()
 #number of steps for each animation
-light_animation_steps = [4,5,2,2,3,1,5,3,1]
-medium_animation_steps  = [4,6,2,3,3,1,5,3,1]
-heavy_animation_steps =   [4,4,3,3,3,1,4,3,1]
+light_animation_steps = [4,5,2,2,3,1,5,3,1,6]
+medium_animation_steps  = [4,6,2,3,3,1,5,3,1,4]
+heavy_animation_steps =   [4,4,3,3,3,1,4,3,1,6]
 #set framerate
 clock = pygame.time.Clock()
 
@@ -85,6 +85,7 @@ def draw_finisherbar(finisher_value, x, y):
     pygame.draw.rect(screen,(colour_dark), (x-3,y-3,206,26))
     pygame.draw.rect(screen,(26, 43, 68), (x,y,200,20))
     pygame.draw.rect(screen, (59, 130, 246), (x,y,0+finisher_value,20))
+    print(finisher_value)
 
 def end_match(health,x,y):
     if health <= 0:

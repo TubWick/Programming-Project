@@ -1,6 +1,10 @@
 import pygame
 import sys
 import os
+from pygame import mixer
+
+
+mixer.init()
 pygame.init()
 from characterselection import Charselectionscreen
 res = 1280,720

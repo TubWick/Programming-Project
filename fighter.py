@@ -61,8 +61,8 @@ class Fighter():
         self.alive = True #if the player is alive
         #load audio
         pygame.mixer.music.load("files/audio/background_music.mp3")
-        pygame.mixer.music.set_volume(0.5)
-        pygame.mixer.music.play(-1)  #loop infinitely
+        pygame.mixer.music.set_volume(0.2)
+        #pygame.mixer.music.play(-1)  #loop infinitely
         self.light_attack_sound = pygame.mixer.Sound("files/audio/lighthit.wav") #load all sound effects
         self.light_attack_sound.set_volume(0.5)
         self.medium_attack_sound = pygame.mixer.Sound("files/audio/mediumhit.wav")
@@ -75,10 +75,11 @@ class Fighter():
         self.blocked_attack_sound.set_volume(0.5)
         self.parried_attack_sound = pygame.mixer.Sound("files/audio/parriedatk.wav")
         self.parried_attack_sound.set_volume(0.5)
+        self.missed_attack_sound = pygame.mixer.Sound("files/audio/missedatk.wav")
+        self.missed_attack_sound.set_volume(0.5)
         self.death_effect_sound = pygame.mixer.Sound("files/audio/death.wav")
         self.death_effect_sound.set_volume(0.5)
-        self.selection  = pygame.mixer.Sound("files/audio/selection.wav")
-        self.invalidselection = pygame.mixer.Sound("files/audio/invalidselection.wav")
+  
         
 #extract the images from the spritesheet for the current character selected
     def load_images(self,sprite_sheet, animation_steps):
@@ -146,7 +147,10 @@ class Fighter():
                   #  self.medium_attack_sound.play()
                     self.attack(surface, target)
                 if key[pygame.key.key_code(self.attack3)]:
-                    self.attack_type = 3
+                    if self.finisher_value >= 200:
+                        self.attack_type = 4
+                    else:   
+                        self.attack_type = 3
                   #  self.heavy_attack_sound.play()
                     self.attack(surface, target)
 
@@ -194,6 +198,8 @@ class Fighter():
                 self.action_handler(3)#mattack
             elif self.attack_type == 3:
                 self.action_handler(4)#hattack
+            elif self.attack_type == 4:
+                self.action_handler(9)#finisher
         
         elif self.moving == True:
             self.action_handler(1)#walk
@@ -235,6 +241,8 @@ class Fighter():
     def finisher_meter(self,finisher_value):
         if self.finisher_value < 200:
             self.finisher_value += 20
+        if self.finisher_value >= 200:
+            self.finisher_attack_sound.play()
     
     def attack(self, surface, target):
         if self.attack_cooldown == 0:
@@ -285,6 +293,10 @@ class Fighter():
                     else:    
                         print("blocked")
                         self.blocked_attack_sound.play()
+            else:
+                self.missed_attack_sound.play()
+
+
 
          ##           # Fix animations bugging
            #         if self.attack_type == 1:
