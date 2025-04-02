@@ -10,6 +10,7 @@ import pygame
 #v - attacking a blocking fighter sometimes locks person who attacks the blocking fighter into walking animation
 #v - parry window is not working - attacks cannot be parried
 #x - takes no damage if moving whilst blocking - should stop blocking but doesnt ):
+#x - hitstun goes to other person when parrying
 
 
 #to do
@@ -20,13 +21,16 @@ import pygame
 # x/x - finisher - will be a powerful attack that can only be used when the finisher meter is full 
 # v - parry - will be a defensive move that can be used if you block an attack quickly, will grant significant finisher meter if you know the timing
 # v - blocking - will be a defensive move that negates damage taken from attacks, can be broken by heavy attacks
-
+# x - hitstun timer - when hit, will be stunned for a set amount of time
 
 class Fighter():
     def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,block,health, data, sprite_sheet, animation_steps):
+        self.finisher_status = False
         self.parry_window = False #parry window is the period of time in which you are able to parry
         self.parry_timer = 0 #measures how long the parry has been going
         self.parry_duration = 300 #the maximum time the parry can go
+        self.hitstun_start = 0 #the time the player is stunned for when hit
+        self.hitstun_duration = 0 #the duration of the hitstun
         self.size = data[0] #the size of the sprite - taken from the data list which is passed in as a parameter to take FIGHTER_DATA
         self.image_scale = data[1]#the same as above but for the scale of the spriter
         self.offset = data[2] #the offset of the sprite to ensure it is centered to the player rect
@@ -79,6 +83,12 @@ class Fighter():
         self.missed_attack_sound.set_volume(0.5)
         self.death_effect_sound = pygame.mixer.Sound("files/audio/death.wav")
         self.death_effect_sound.set_volume(0.5)
+        self.lfighterfinisher_sound = pygame.mixer.Sound("files/audio/lfighterfinisher.wav")
+        self.lfighterfinisher_sound.set_volume(0.5)
+        self.mfighterfinisher_sound = pygame.mixer.Sound("files/audio/mfighterfinisher.wav")
+        self.mfighterfinisher_sound.set_volume(0.5)
+        self.hfighterfinisher_sound = pygame.mixer.Sound("files/audio/hfighterfinisher.wav")
+        self.hfighterfinisher_sound.set_volume(0.5)
   
         
 #extract the images from the spritesheet for the current character selected
@@ -118,6 +128,13 @@ class Fighter():
             self.parry_window = False
             print(f"Parry window expired for fighter at {self.rect.topleft}")
             print(self.parry_window)
+
+        
+        if target.hit and pygame.time.get_ticks() - target.hitstun_start > target.hitstun_duration:
+            target.hit = False
+            target.hitstun_duration = 0
+            target.action_handler(0)
+            print("Hitstun ended, target.hit set to False")
             
         #handle blocking
         if not self.attacking and not self.hit:
@@ -149,6 +166,7 @@ class Fighter():
                 if key[pygame.key.key_code(self.attack3)]:
                     if self.finisher_value >= 200:
                         self.attack_type = 4
+                        self.finisher_status = True
                     else:   
                         self.attack_type = 3
                   #  self.heavy_attack_sound.play()
@@ -188,7 +206,13 @@ class Fighter():
             self.alive = False
             self.action_handler(6)#death
         elif self.hit == True:
-            self.action_handler(5)#hitstun
+            self.action_handler(5)#hit
+      #          if pygame.time.get_ticks() -self.update_time > 150:
+       #             self.update_time = pygame.time.get_ticks()
+         #           self.frame_index += 1
+        #            if self.frame_index >= len(self.animation_list[self.action]):
+          #              self.frame_index = 0
+
         elif self.jump == True:
             self.action_handler(7)#jump
         elif self.attacking == True:
@@ -200,6 +224,7 @@ class Fighter():
                 self.action_handler(4)#hattack
             elif self.attack_type == 4:
                 self.action_handler(9)#finisher
+                self.finisher_status = False
         
         elif self.moving == True:
             self.action_handler(1)#walk
@@ -214,16 +239,15 @@ class Fighter():
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
             if self.frame_index >= len(self.animation_list[self.action]):  #if the frame index is at the end of the current animation
-                #check to see if player is dead
+                #check for player K.O
                 if self.alive == False:
                     self.frame_index = len(self.animation_list[self.action]) -1 #set the frame index to the last frame of the death animation
                 else:
                     self.frame_index = 0  #reset the frame index
-                    if self.action in [2,3,4]:
+                    if self.action in [2,3,4,9]:
                         self.attacking = False  #only have self.attacking reset to false when the attack is done
                         self.attack_cooldown = 10
                     if self.hit == True:
-                        self.hit = False
                         #interrupt attack if attacked during wind up
                         self.attacking = False
                         self.attack_cooldown = 10
@@ -246,6 +270,7 @@ class Fighter():
     
     def attack(self, surface, target):
         if self.attack_cooldown == 0:
+
             self.attacking = True
             attack_hitbox = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y, 2 * self.rect.width + 100, self.rect.height)
             
@@ -255,25 +280,37 @@ class Fighter():
                 if not target.blocking and not target.parry_window:
                     if self.attack_type == 1:
                         target.damage(2,target)
+                        target.hitstun(target,100)
                         self.finisher_meter(10)
                         self.light_attack_sound.play()
 
                     elif self.attack_type == 2:
                         target.damage(6,target)
+                        target.hitstun(target,300)
                         self.finisher_meter(15)
                         self.medium_attack_sound.play()
                     
                     elif self.attack_type == 3:
                         target.damage(10,target)
+                        target.hitstun(target,700)
                         self.heavy_attack_sound.play()
                         self.finisher_meter(20)
 
+                    elif self.attack_type == 4:
+                        self.mfighterfinisher_sound.play()
+                        if self.finisher_status == True:
+                            for i in range(0,5):
+                                target.hitstun(target,1000)
+                                target.damage(10,target)
+                                self.finisher_meter(-200)
+
                 #parry logic - parrying only happens when parry_window is True 
                 elif target.parry_window:
-                    target.finisher_meter(20)
+                    target.finisher_meter(200)
                     print("parried")
                     self.parried_attack_sound.play()
-                    self.hit = True
+                    
+                    target.hitstun(target,500)
                     self.attack_cooldown = 30
                     if self.flip == False: 
                         parry_effect_x = self.rect.centerx - 100
@@ -287,6 +324,7 @@ class Fighter():
                     #blocking can be broke by heavy attack
                     if self.attack_type == 3:
                         target.damage(20,target)
+                        target.hitstun(target,1000)
                         target.hit = True
                         self.finisher_meter(20)
                         self.finisher_attack_sound.play()
@@ -310,11 +348,20 @@ class Fighter():
 
     def damage(self,damage_dealt,target):
         self.health -= damage_dealt
-        target.hit = True
-        print("hit")
-        print(target.health)
         if target.health <= 0:
             target.death_effect_sound.play()
+
+    def hitstun(self,target,hitstun_duration):
+        target.hit = True
+        print(target.hitstun_start)
+        print(f"target.hit = {target.hit}")
+        target.hitstun_start = pygame.time.get_ticks()
+        
+        target.hitstun_duration = hitstun_duration
+        print(f"Hitstun duration: {target.hitstun_duration} and current time: {pygame.time.get_ticks()}")
+
+
+
 
     def draw(self, surface):
         # Create a separate flipped image (flipped_img) so that players face each other if they pass

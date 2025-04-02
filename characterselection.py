@@ -119,17 +119,3 @@ class Charselectionscreen():
         if self.p2_selected == "heavy":
             pygame.draw.polygon(screen, (self.selectedcolour), self.h_offset_outline, 10)
             screen.blit(self.p2marker, (self.h_rect.topleft))
-
-
-#characterselection = Charselectionscreen(500, 200)
-#run = True
-#while run:
-    #for event in pygame.event.get():
-   #     if event.type == pygame.QUIT:
-  #          run = False
- #   screen.fill(colour)
-#    characterselection.ifhover()
-    #characterselection.draw_cs_screen()
-   # characterselection.ifclicked(event)
-  #  characterselection.draw_selected_outline()
- #   characterselection.turn_counter()
