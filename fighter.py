@@ -2,7 +2,7 @@ import pygame
 
 #errors i encountered x = didnt fix v = did! 
 #v - when i attack whilst moving, become trapped in walking animation
-#v/x - can move whilst hit
+#v - can move whilst hit
 #v - interrupting attacks with an attack wouldnt play hit animation
 #v - finisher meter goes to wrong person
 #v - hit animation goes to other person
@@ -11,6 +11,7 @@ import pygame
 #v - parry window is not working - attacks cannot be parried
 #x - takes no damage if moving whilst blocking - should stop blocking but doesnt ):
 #x - hitstun goes to other person when parrying
+#x - blocking is not broke by finishers
 
 
 #to do
@@ -21,7 +22,7 @@ import pygame
 # x/x - finisher - will be a powerful attack that can only be used when the finisher meter is full 
 # v - parry - will be a defensive move that can be used if you block an attack quickly, will grant significant finisher meter if you know the timing
 # v - blocking - will be a defensive move that negates damage taken from attacks, can be broken by heavy attacks
-# x - hitstun timer - when hit, will be stunned for a set amount of time
+# v - hitstun timer - when hit, will be stunned for a set amount of time
 
 class Fighter():
     def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,block,health, data, sprite_sheet, animation_steps):
@@ -40,6 +41,7 @@ class Fighter():
         self.parry_effect = pygame.image.load("files/assets/parry_icon.png").convert_alpha() #load the parry effect
         self.parry_effect = pygame.transform.scale(self.parry_effect, (200, 200))  #scale the parry effect 
         self.vel_y = 0 #velocity on y 
+        self.vel_x = 0 #velocity on x
         self.jump = False #check if jumping
         self.moving = False #check if moving
         self.blocking = False #check if blocking
@@ -152,7 +154,7 @@ class Fighter():
                 self.vel_y = -30
                 self.jump = True
                 self.moving = False
-
+            
             # Attacking keys
             if not self.jump:
                 if key[pygame.key.key_code(self.attack1)]:
@@ -171,7 +173,12 @@ class Fighter():
                         self.attack_type = 3
                   #  self.heavy_attack_sound.play()
                     self.attack(surface, target)
-
+        if self.vel_x != 0:
+            self.rect.x += self.vel_x
+            if self.vel_x>0:
+                self.vel_x-=1
+            if self.vel_x<0:
+                self.vel_x+=1
         # Apply gravity
         self.vel_y += GRAVITY
         dy += self.vel_y
@@ -279,20 +286,20 @@ class Fighter():
                 #attack logic - can only be damaged when not blocking or parrying
                 if not target.blocking and not target.parry_window:
                     if self.attack_type == 1:
-                        target.damage(2,target)
-                        target.hitstun(target,100)
+                        target.damage(2,target,4)
+                        target.hitstun(100)
                         self.finisher_meter(10)
                         self.light_attack_sound.play()
 
                     elif self.attack_type == 2:
-                        target.damage(6,target)
-                        target.hitstun(target,300)
+                        target.damage(6,target,10)
+                        target.hitstun(300)
                         self.finisher_meter(15)
                         self.medium_attack_sound.play()
                     
                     elif self.attack_type == 3:
-                        target.damage(10,target)
-                        target.hitstun(target,700)
+                        target.damage(20,target,15)
+                        target.hitstun(700)
                         self.heavy_attack_sound.play()
                         self.finisher_meter(20)
 
@@ -300,8 +307,8 @@ class Fighter():
                         self.mfighterfinisher_sound.play()
                         if self.finisher_status == True:
                             for i in range(0,5):
-                                target.hitstun(target,1000)
-                                target.damage(10,target)
+                                target.hitstun(100)
+                                target.damage(50,target,50)
                                 self.finisher_meter(-200)
 
                 #parry logic - parrying only happens when parry_window is True 
@@ -310,7 +317,7 @@ class Fighter():
                     print("parried")
                     self.parried_attack_sound.play()
                     
-                    target.hitstun(target,500)
+                    self.hitstun(500)
                     self.attack_cooldown = 30
                     if self.flip == False: 
                         parry_effect_x = self.rect.centerx - 100
@@ -323,8 +330,8 @@ class Fighter():
                 elif target.blocking:
                     #blocking can be broke by heavy attack
                     if self.attack_type == 3:
-                        target.damage(20,target)
-                        target.hitstun(target,1000)
+                        target.damage(20,target,10)
+                        target.hitstun(1000)
                         target.hit = True
                         self.finisher_meter(20)
                         self.finisher_attack_sound.play()
@@ -346,19 +353,23 @@ class Fighter():
 
         # pygame.draw.rect(surface, (0,255,0), attack_hitbox)
 
-    def damage(self,damage_dealt,target):
+    def damage(self,damage_dealt,target,knockback):
         self.health -= damage_dealt
+        if self.flip:
+            target.vel_x = abs(knockback)
+        else:
+            target.vel_x = -abs(knockback)
         if target.health <= 0:
             target.death_effect_sound.play()
 
-    def hitstun(self,target,hitstun_duration):
-        target.hit = True
-        print(target.hitstun_start)
-        print(f"target.hit = {target.hit}")
-        target.hitstun_start = pygame.time.get_ticks()
+    def hitstun(self,hitstun_duration):
+        self.hit = True
+        print(self.hitstun_start)
+    #    print(f"target.hit = {target.hit}")
+        self.hitstun_start = pygame.time.get_ticks()
         
-        target.hitstun_duration = hitstun_duration
-        print(f"Hitstun duration: {target.hitstun_duration} and current time: {pygame.time.get_ticks()}")
+        self.hitstun_duration = hitstun_duration
+      #  print(f"Hitstun duration: {self.hitstun_duration} and current time: {pygame.time.get_ticks()}")
 
 
 

@@ -27,7 +27,6 @@ class Timer:
 
 match_timer = Timer()
 match_timer.activate()
-#i need a plain black background
 def draw_bg():
     width = screen.get_width()
     height = screen.get_height()

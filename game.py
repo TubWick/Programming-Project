@@ -10,6 +10,19 @@ from fighter import Fighter
 from characterselection import Charselectionscreen
 from pygame import mixer
 import csv
+from test_button import Button
+from test_button import Leaderboard
+import os
+
+
+def go_back_to_main():
+    pygame.display.quit()
+    os.system("python main.py")
+
+ 
+mainmenu_button= Button(10,10,100,100, "Main Menu", lambda: go_back_to_main())
+
+
 
 mixer.init()
 pygame.init()
@@ -54,8 +67,6 @@ res = 1000,600
 screen = pygame.display.set_mode((res))
 pygame.display.set_caption("Fighting game")
 
-
-
 smallfont = pygame.font.Font('files/mini_pixel-7.ttf',100)
 errorfont = pygame.font.Font('files/Game Paused DEMO.ttf',50)
 gameoverfont = pygame.font.Font('files/mini_pixel-7.ttf',150)
@@ -80,6 +91,7 @@ MEDIUM_FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE, MEDIUM_FIGHTER_OFFSET]
 HEAVY_FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE, HEAVY_FIGHTER_OFFSET]
 LIGHT_FIGHTER_DATA = [FIGHTER_SIZE, FIGHTER_SCALE, LIGHT_FIGHTER_OFFSET]
 #create background image
+
 bg_image= pygame.image.load("files/assets/background.png").convert_alpha()
 
 #load spritesheet
@@ -93,7 +105,30 @@ heavy_animation_steps =   [4,4,3,3,3,1,4,3,1,6]
 #set framerate
 clock = pygame.time.Clock()
 
+def pause_menu():
+    paused = True
+    while paused:
+        screen.fill((0, 0, 0)) 
+        pause_text = gameoverfont.render("PAUSED", True, (255, 255, 255))
+        resume_text = smallfont.render("Press R to Resume", True, (255, 255, 255))
+        quit_text = smallfont.render("Press Q to Quit", True, (255, 255, 255))
+        # display pause menu text
+        screen.blit(pause_text, (width // 2 - pause_text.get_width() // 2, height // 2 - 150))
+        screen.blit(resume_text, (width // 2 - resume_text.get_width() // 2, height // 2))
+        screen.blit(quit_text, (width // 2 - quit_text.get_width() // 2, height // 2 + 100))
+        pygame.display.update()
 
+        #handle events in the pause menu
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:  #resume
+                    paused = False
+                elif event.key == pygame.K_q:  #quit
+                    pygame.quit()
+                    exit()
 
 def draw_bg():
     width = screen.get_width()
@@ -140,8 +175,10 @@ def win_screen(x,y,text_colour):
     screen.blit(win_text_outline,(x+45,y-120))
     screen.blit(win_text_body,(x-250, y-300)) 
     screen.blit(heavyicon, (x + 120, y - 175))
+    mainmenu_button.draw(screen)
+    mainmenu_button.click()
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == pygame.QUIT:   
             run = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if input_box.collidepoint(event.pos):
@@ -157,6 +194,7 @@ def win_screen(x,y,text_colour):
                 # error = errorfont.render("Input Cannot Be Empty", True, (255,255,255)).convert_alpha()
                  #   screen.blit(error, (200, 150))
                 else:
+                    print("opening")
                     with open("name.csv", mode="a",newline="") as file:
                         writer = csv.writer(file)
                         writer.writerow([input_text])
@@ -171,12 +209,10 @@ def win_screen(x,y,text_colour):
     text_surface = smallfont.render(input_text, True, (0,0,255))
     screen.blit(text_surface, (input_box.x + 5, input_box.y + 5))
 
-
 width = screen.get_width()
 height = screen.get_height()
 
 #instantiate fighters
-
 fighter_1 = Fighter(200,350,"a","d","w","x","c","v","f",100,MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
 fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M","l",100,LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
 
@@ -186,8 +222,16 @@ run = True
 while run:
     clock.tick(60)
 
-    # Retrieve all events once per frame
+    # Retrieve all events once per frame to allow for perfect parryies
     events = pygame.event.get()
+
+        #event handler
+    for event in events:
+        if event.type == pygame.QUIT:
+            run = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                pause_menu()
 
     #draw background
     draw_bg()
@@ -216,7 +260,7 @@ while run:
         match_timer.update()
     
     if match_end_time != 0:
-        if pygame.time.get_ticks() - match_end_time >0000:
+        if pygame.time.get_ticks() - match_end_time >5000:
             match_end_trigger = True
             win_screen(400,300,((255,255,255)))
             
@@ -226,10 +270,7 @@ while run:
     end_match(fighter_1.health, 400, 300)
     end_match(fighter_2.health, 400, 300)
 
-    #event handler
-    for event in events:
-        if event.type == pygame.QUIT:
-            run = False
+
 
     #update display
     pygame.display.update()
