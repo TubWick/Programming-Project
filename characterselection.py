@@ -1,12 +1,13 @@
 #i used mv characterselection characterselection.py so that this was treated as a module rather than a file
 #this allows me to import it into main.py to use the class across my main menu.
 
-
 import pygame
 import sys
 import os
-pygame.init()
+from test_button import Button
 
+# Initialize Pygame modules
+pygame.init()
 
 res = 1280, 620
 screen = pygame.display.set_mode((res))
@@ -56,7 +57,12 @@ class Charselectionscreen():
         self.h_offset_outline = [(p[0] + self.h_rect.x, p[1] + self.h_rect.y) for p in self.h_outline]
         self.p1_selected = None  
         self.p2_selected = None  
-        self.turn = "p1"  
+        self.turn = "p1" 
+
+        def start_game():
+            pygame.display.quit()
+            os.system("python game.py")
+
 
     def draw_cs_screen(self):
         #blitting icons
@@ -70,6 +76,8 @@ class Charselectionscreen():
         screen.blit(m_desc_surf, (self.x + 25, self.y + 300))
         h_desc_surf = smallfont.render('Heavy Fighter', True, (255, 255, 255))
         screen.blit(h_desc_surf, (self.x + 470, self.y + 300))
+        #make start button
+        self.start_button = Button(self.x - 100, self.y + 400, button_width, button_height, "Start", lambda: self.start_game)
 
     def ifhover(self):
         if self.l_rect.collidepoint(pygame.mouse.get_pos()):
@@ -119,3 +127,7 @@ class Charselectionscreen():
         if self.p2_selected == "heavy":
             pygame.draw.polygon(screen, (self.selectedcolour), self.h_offset_outline, 10)
             screen.blit(self.p2marker, (self.h_rect.topleft))
+
+    def get_selected_characters(self):
+        """Return the selected characters for Player 1 and Player 2."""
+        return self.p1_selected, self.p2_selected

@@ -1,4 +1,8 @@
 import pygame
+
+# Initialize Pygame modules
+pygame.init()
+
 colour = (0, 0, 0)
 colour_dark = (100, 100, 100)
 colour_light = (170, 170, 170)

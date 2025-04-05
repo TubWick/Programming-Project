@@ -3,8 +3,6 @@
 #v - letters vanished moment they appeared - pass input_text as param
 #v - not going to new line in csv file 
 
-
-
 import pygame
 from fighter import Fighter
 from characterselection import Charselectionscreen
@@ -13,6 +11,8 @@ import csv
 from test_button import Button
 from test_button import Leaderboard
 import os
+import shared_state  # Import the shared state module
+import sys
 
 
 def go_back_to_main():
@@ -21,8 +21,6 @@ def go_back_to_main():
 
  
 mainmenu_button= Button(10,10,100,100, "Main Menu", lambda: go_back_to_main())
-
-
 
 mixer.init()
 pygame.init()
@@ -212,9 +210,59 @@ def win_screen(x,y,text_colour):
 width = screen.get_width()
 height = screen.get_height()
 
-#instantiate fighters
-fighter_1 = Fighter(200,350,"a","d","w","x","c","v","f",100,MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
-fighter_2 = Fighter(700,350,"LEFT","RIGHT","UP","B","N","M","l",100,LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
+class create_fighters:
+    def __init__(self, p1_character, p2_character):
+        self.p1_character = p1_character
+        self.p2_character = p2_character
+        self.fighter_1 = None  # Initialize as None
+        self.fighter_2 = None  # Initialize as None
+
+    def initialise_fighters(self):
+        print(f"Player 1 selected: {self.p1_character}")
+        print(f"Player 2 selected: {self.p2_character}")
+        if self.p1_character == "light":
+            self.fighter_1 = Fighter(200, 350, "a", "d", "w", "x", "c", "v", "f", 100, LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
+        elif self.p1_character == "medium":
+            self.fighter_1 = Fighter(200, 350, "a", "d", "w", "x", "c", "v", "f", 100, MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
+        elif self.p1_character == "heavy":
+            self.fighter_1 = Fighter(200, 350, "a", "d", "w", "x", "c", "v", "f", 100, HEAVY_FIGHTER_DATA, heavy_fighter_sheet, heavy_animation_steps)
+        if self.p2_character == "light":
+            self.fighter_2 = Fighter(700, 350, "LEFT", "RIGHT", "UP", "B", "N", "M", "l", 100, LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
+        elif self.p2_character == "medium":
+            self.fighter_2 = Fighter(700, 350, "LEFT", "RIGHT", "UP", "B", "N", "M", "l", 100, MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
+        elif self.p2_character == "heavy":
+            self.fighter_2 = Fighter(700, 350, "LEFT", "RIGHT", "UP", "B", "N", "M", "l", 100, HEAVY_FIGHTER_DATA, heavy_fighter_sheet, heavy_animation_steps)
+
+# Read selected characters from the file
+try:
+    with open("selected_characters.txt", "r") as file:
+        p1_selected = file.readline().strip()
+        p2_selected = file.readline().strip()
+except FileNotFoundError:
+    print("Error: Selected characters file not found.")
+    pygame.quit()
+    sys.exit()
+
+if not p1_selected or not p2_selected:
+    print("Error: One or both players did not select a character.")
+    pygame.quit()
+    sys.exit()
+
+print(f"Player 1 selected: {p1_selected}")
+print(f"Player 2 selected: {p2_selected}")
+
+# Ensure selected characters are valid before initializing fighters
+fighters = create_fighters(p1_selected, p2_selected)
+fighters.initialise_fighters()
+
+# Access fighters globally
+fighter_1 = fighters.fighter_1
+fighter_2 = fighters.fighter_2
+
+if not fighter_1 or not fighter_2:
+    print("Error: Fighters could not be initialized.")
+    pygame.quit()
+    sys.exit()
 
 
 #game loop

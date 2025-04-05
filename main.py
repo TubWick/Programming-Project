@@ -2,7 +2,7 @@ import pygame
 import sys
 import os
 from pygame import mixer
-
+import shared_state  # Import the shared state module
 
 mixer.init()
 pygame.init()
@@ -111,7 +111,20 @@ def leaderboard_action():
 def start_action():
     global screen_state
     screen_state = 3
-                                                                                            #120
+
+def start_match_action():
+    global screen_state
+    if characterselection.p1_selected and characterselection.p2_selected:
+        # Save selected characters to a file
+        with open("selected_characters.txt", "w") as file:
+            file.write(f"{characterselection.p1_selected}\n")
+            file.write(f"{characterselection.p2_selected}\n")
+        print("Saved P1:", characterselection.p1_selected, "P2:", characterselection.p2_selected)
+        # Launch game.py and exit main.py
+        os.system("python game.py")
+        sys.exit()  # Exit main.py
+    else:
+        print("Both players must select their characters before starting the match.")
 
 # instantiations
 startbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 120, button_width, button_height, "Start", start_action)
@@ -120,12 +133,12 @@ leaderboardbutton = Button(width // 2 - button_width // 2, height // 2 - button_
 leaderboard = Leaderboard(width,height)
 quitbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 + 60, button_width, button_height, "Quit", quit_action)
 backbutton = BackButton(10,10,width,height,lambda: back_button.backaction())
+startmatchbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 + 300, button_width, button_height, "Start Match", start_match_action)
 characterselection = Charselectionscreen(500, 200)
 # main game loop
 running = True
 while running:
     screen.fill(colour)
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -143,6 +156,10 @@ while running:
                 elif leaderboardbutton.get_hovered():
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         leaderboardbutton.click()
+        elif screen_state == 3:
+            if startmatchbutton.get_hovered():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    startmatchbutton.click()
     
     #main menu
     if screen_state == 0:
@@ -172,8 +189,15 @@ while running:
         characterselection.draw_selected_outline()
         backbutton.imagedraw()
         backbutton.backaction()
-
-        
+        startmatchbutton.draw(screen)
+    if screen_state == 4:
+        if characterselection.p1_selected and characterselection.p2_selected:
+            print("Starting game with P1:", characterselection.p1_selected, "and P2:", characterselection.p2_selected)
+            os.system("python game.py")
+            sys.exit()  # Ensure the current script stops execution
+        else:
+            print("Cannot start game. Both players must select their characters.")
+            screen_state = 3  # Return to character selection screen
 
     pygame.display.update()
 
