@@ -12,6 +12,7 @@ import pygame
 #x - takes no damage if moving whilst blocking - should stop blocking but doesnt ):
 #x - hitstun goes to other person when parrying
 #x - blocking is not broke by finishers
+#x - damage the same for all classes
 
 
 #to do
@@ -23,6 +24,19 @@ import pygame
 # v - parry - will be a defensive move that can be used if you block an attack quickly, will grant significant finisher meter if you know the timing
 # v - blocking - will be a defensive move that negates damage taken from attacks, can be broken by heavy attacks
 # v - hitstun timer - when hit, will be stunned for a set amount of time
+
+try:
+    with open("selected_characters.txt", "r") as file:
+        p1_selected = file.readline().strip()
+        p2_selected = file.readline().strip()
+except FileNotFoundError:
+    print("Error: Selected characters file not found.")
+    p1_selected = None
+    p2_selected = None
+
+print(f"Player 1 selected: {p1_selected}")
+print(f"Player 2 selected: {p2_selected}")
+
 
 class Fighter():
     def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,block,health, data, sprite_sheet, animation_steps):
@@ -253,8 +267,22 @@ class Fighter():
                     self.frame_index = 0  #reset the frame index
                     if self.action in [2,3,4,9]:
                         self.attacking = False  #only have self.attacking reset to false when the attack is done
-                        self.attack_cooldown = 10
-                    if self.hit == True:
+                        if p1_selected == "light" and p2_selected != "light":
+                            self.attack_cooldown = 10
+                        if p2_selected == "light" and p1_selected != "light":
+                            self.attack_cooldown = 10
+                        elif p1_selected == "medium" and p2_selected != "medium":
+                            self.attack_cooldown = 15
+                        elif p2_selected == "medium" and p1_selected != "medium":
+                            self.attack_cooldown = 15
+                        elif p1_selected == "heavy" and p2_selected != "heavy":
+                            self.attack_cooldown = 20
+                        elif p2_selected == "heavy" and p1_selected != "heavy":
+                            self.attack_cooldown = 20
+                        #reset the finisher value to 0 after the finisher is used
+                        if self.finisher_status == True:
+                            self.finisher_value = 0
+                    if self.hit == True: 
                         #interrupt attack if attacked during wind up
                         self.attacking = False
                         self.attack_cooldown = 10
@@ -277,28 +305,63 @@ class Fighter():
     
     def attack(self, surface, target):
         if self.attack_cooldown == 0:
-
             self.attacking = True
             attack_hitbox = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y, 2 * self.rect.width + 100, self.rect.height)
             
-            #check attack hit 
+            # Debugging: Print selected classes
+            print(f"p1_selected: {p1_selected}, p2_selected: {p2_selected}")
+
+            # Check attack hit 
             if attack_hitbox.colliderect(target.rect):
-                #attack logic - can only be damaged when not blocking or parrying
+                # Attack logic - can only be damaged when not blocking or parrying
                 if not target.blocking and not target.parry_window:
                     if self.attack_type == 1:
-                        target.damage(2,target,4)
+                        if p1_selected == "light" and p2_selected != "light":
+                            target.damage(5, target, 3)
+                        elif p2_selected == "light" and p1_selected != "light":
+                            target.damage(5, target, 3)
+                        elif p1_selected == "medium" and p2_selected != "medium":
+                            target.damage(7, target, 5)
+                        elif p2_selected == "medium" and p1_selected != "medium":
+                            target.damage(100, target, 5)
+                        elif p1_selected == "heavy" and p2_selected != "heavy":
+                            target.damage(10, target, 7)
+                        elif p2_selected == "heavy" and p1_selected != "heavy":
+                            target.damage(10, target, 7)
                         target.hitstun(100)
                         self.finisher_meter(10)
                         self.light_attack_sound.play()
 
                     elif self.attack_type == 2:
-                        target.damage(6,target,10)
+                        if p1_selected == "light" and p2_selected != "light":
+                            target.damage(10, target, 6)
+                        elif p2_selected == "light" and p1_selected != "light":
+                            target.damage(10, target, 6)
+                        elif p1_selected == "medium" and p2_selected != "medium":
+                            target.damage(15, target, 8)
+                        elif p2_selected == "medium" and p1_selected != "medium":
+                            target.damage(15, target, 8)
+                        elif p1_selected == "heavy" and p2_selected != "heavy":
+                            target.damage(3000, target, 10)
+                        elif p2_selected == "heavy" and p1_selected != "heavy":
+                            target.damage(20, target, 10)
                         target.hitstun(300)
                         self.finisher_meter(15)
                         self.medium_attack_sound.play()
                     
                     elif self.attack_type == 3:
-                        target.damage(20,target,15)
+                        if p1_selected == "light" and p2_selected != "light":
+                            target.damage(15, target, 9)
+                        elif p2_selected == "light" and p1_selected != "light":
+                            target.damage(15, target, 9)
+                        elif p1_selected == "medium" and p2_selected != "medium":
+                            target.damage(20, target, 12)
+                        elif p2_selected == "medium" and p1_selected != "medium":
+                            target.damage(20, target, 12)
+                        elif p1_selected == "heavy" and p2_selected != "heavy":
+                            target.damage(30, target, 15)
+                        elif p2_selected == "heavy" and p1_selected != "heavy":
+                            target.damage(30, target, 15)
                         target.hitstun(700)
                         self.heavy_attack_sound.play()
                         self.finisher_meter(20)
@@ -306,10 +369,8 @@ class Fighter():
                     elif self.attack_type == 4:
                         self.mfighterfinisher_sound.play()
                         if self.finisher_status == True:
-                            for i in range(0,5):
-                                target.hitstun(100)
-                                target.damage(50,target,50)
-                                self.finisher_meter(-200)
+                            target.hitstun(1000)
+                            target.damage(50, target, 20)
 
                 #parry logic - parrying only happens when parry_window is True 
                 elif target.parry_window:
@@ -328,30 +389,18 @@ class Fighter():
                 
                 #blocking logic - damage only negated if blocking
                 elif target.blocking:
-                    #blocking can be broke by heavy attack
-                    if self.attack_type == 3:
-                        target.damage(20,target,10)
+                    #blocking can be broke by heavy class heavy attack
+                    if p1_selected == "heavy" or p2_selected == "heavy":
+                        target.damage(20, target, 10)
                         target.hitstun(1000)
                         target.hit = True
                         self.finisher_meter(20)
-                        self.finisher_attack_sound.play()
+                        self.heavy_attack_sound.play()
                     else:    
                         print("blocked")
                         self.blocked_attack_sound.play()
             else:
                 self.missed_attack_sound.play()
-
-
-
-         ##           # Fix animations bugging
-           #         if self.attack_type == 1:
-            #            self.action_handler(2)
-             #       elif self.attack_type == 2:
-              #          self.action_handler(3)
-               #     else:
-                #        self.action_handler(4)
-
-        # pygame.draw.rect(surface, (0,255,0), attack_hitbox)
 
     def damage(self,damage_dealt,target,knockback):
         self.health -= damage_dealt
