@@ -39,6 +39,7 @@ print(f"Player 2 selected: {p2_selected}")
 
 
 class Fighter():
+    #test
     def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,block,health, data, sprite_sheet, animation_steps):
         self.finisher_status = False
         self.parry_window = False #parry window is the period of time in which you are able to parry
