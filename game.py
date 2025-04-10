@@ -3,6 +3,13 @@
 #v - letters vanished moment they appeared - pass input_text as param
 #v - not going to new line in csv file 
 
+#to do
+# the player that wins gets saved to a vatriable 
+# can get passed throigh to this file
+# that can then determine which player won and the icon it blits by using p1_selected!!!
+# kills two birds with one stone
+
+
 import pygame
 from fighter import Fighter
 from characterselection import Charselectionscreen
@@ -163,18 +170,44 @@ def end_match(health,x,y):
             screen.blit(end_text_fill,(x+40, y-20))
             screen.blit(end_text_body,(x+25, y-15))
 
-def win_screen(x,y,text_colour):
+def win_screen(x, y, text_colour):
     global input_box
     global input_text 
     global input_active  
-    screen.fill((0,0,0))
-    win_text_body = winscreenfont.render("PLAYER X WINS", True, ((255,10,20))).convert_alpha()
-    win_text_outline = winscreenfont.render("WIN", True, (0,0,0)).convert_alpha()
-    screen.blit(win_text_outline,(x+45,y-120))
-    screen.blit(win_text_body,(x-250, y-300)) 
-    screen.blit(heavyicon, (x + 120, y - 175))
+    screen.fill((0, 0, 0))
+
+    # Check for Player 1 win
+    if fighter_1.winner or fighter_2.winner == "Player 1":
+        win_text_body = winscreenfont.render("PLAYER 1 WINS", True, ((255, 10, 20))).convert_alpha()
+        if p1_selected == "light":
+            screen.blit(lighticon, (x + 120, y - 175))
+        elif p1_selected == "medium":
+            screen.blit(mediumicon, (x + 120, y - 175))
+        elif p1_selected == "heavy":
+            screen.blit(heavyicon, (x + 120, y - 175))
+
+    # Check for Player 2 win
+    elif fighter_1.winner or fighter_2.winner == "Player 2":
+        win_text_body = winscreenfont.render("PLAYER 2 WINS", True, ((255, 10, 20))).convert_alpha()
+        if p2_selected == "light":
+            screen.blit(lighticon, (x + 120, y - 175))
+        elif p2_selected == "medium":
+            screen.blit(mediumicon, (x + 120, y - 175))
+        elif p2_selected == "heavy":
+            screen.blit(heavyicon, (x + 120, y - 175))
+
+    else:
+        # Default value for win_text_body in case no winner is detected
+        win_text_body = winscreenfont.render("NO WINNER", True, ((255, 255, 255))).convert_alpha()
+
+    # Display the winner text
+    screen.blit(win_text_body, (x - 250, y - 300))
+
+    # Draw the main menu button
     mainmenu_button.draw(screen)
     mainmenu_button.click()
+
+    # Handle input for saving player initials
     for event in pygame.event.get():
         if event.type == pygame.QUIT:   
             run = False
@@ -182,18 +215,15 @@ def win_screen(x,y,text_colour):
             if input_box.collidepoint(event.pos):
                 input_active = True
                 print("selected")
-                
             else:
                 input_active = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
-                if len(input_text)<=0 or len(input_text) > 2:
+                if len(input_text) <= 0 or len(input_text) > 2:
                     print("cant be empty or more than 2")
-                # error = errorfont.render("Input Cannot Be Empty", True, (255,255,255)).convert_alpha()
-                 #   screen.blit(error, (200, 150))
                 else:
                     print("opening")
-                    with open("name.csv", mode="a",newline="") as file:
+                    with open("name.csv", mode="a", newline="") as file:
                         writer = csv.writer(file)
                         writer.writerow([input_text])
                     print(f"User typed: {input_text}")  
@@ -202,9 +232,10 @@ def win_screen(x,y,text_colour):
                 input_text = input_text[:-1]
             else:
                 input_text += event.unicode
-            
+
+    # Draw input box for initials
     pygame.draw.rect(screen, (255, 255, 255), input_box)
-    text_surface = smallfont.render(input_text, True, (0,0,255))
+    text_surface = smallfont.render(input_text, True, (0, 0, 255))
     screen.blit(text_surface, (input_box.x + 5, input_box.y + 5))
 
 width = screen.get_width()
@@ -307,13 +338,19 @@ while run:
     if match_timer.active:
         match_timer.update()
     
-    if match_end_time != 0:
-        if pygame.time.get_ticks() - match_end_time >5000:
-            match_end_trigger = True
-            win_screen(400,300,((255,255,255)))
-            
-            pygame.display.update()
 
+    if match_end_time != 0:
+        if pygame.time.get_ticks() - match_end_time > 5000:
+            match_end_trigger = True
+            if fighter_1.winner or fighter_2.winner:
+                winner = fighter_1.winner or fighter_2.winner  # Get the winner
+                print(f"Winner detected: {winner}")  # Debugging
+                win_screen(400, 300, ((255, 255, 255)))
+            else:
+                print("No winner detected.")  # Debugging
+                win_screen(400, 300, ((255, 255, 255)))
+            pygame.display.update()
+          
     #check for end of match
     end_match(fighter_1.health, 400, 300)
     end_match(fighter_2.health, 400, 300)

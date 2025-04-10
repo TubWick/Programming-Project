@@ -79,6 +79,7 @@ class Fighter():
         self.attack_cooldown = 0 #cooldown between attakcs
         self.hit = False #if the player is hit
         self.alive = True #if the player is alive
+        self.winner = None  # Attribute to track the winner
         #load audio
         pygame.mixer.music.load("files/audio/background_music.mp3")
         pygame.mixer.music.set_volume(0.2)
@@ -402,15 +403,16 @@ class Fighter():
             else:
                 self.missed_attack_sound.play()
 
-    def damage(self,damage_dealt,target,knockback):
+    def damage(self, damage_dealt, target, knockback):
         self.health -= damage_dealt
         if self.flip:
             target.vel_x = abs(knockback)
         else:
             target.vel_x = -abs(knockback)
+        if self.health <= 0:
+            self.winner = "Player 2"
         if target.health <= 0:
-            target.death_effect_sound.play()
-
+            target.winner = "Player 1"
     def hitstun(self,hitstun_duration):
         self.hit = True
         print(self.hitstun_start)
