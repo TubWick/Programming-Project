@@ -1,5 +1,4 @@
 import pygame
-import csv  # Import csv module
 
 #errors i encountered x = didnt fix v = did! 
 #v - when i attack whilst moving, become trapped in walking animation
@@ -38,28 +37,9 @@ except FileNotFoundError:
 print(f"Player 1 selected: {p1_selected}")
 print(f"Player 2 selected: {p2_selected}")
 
-# Load settings from CSV
-def load_settings():
-    settings = {"music_on": True, "sound_effects_on": True}
-    try:
-        with open("settings.csv", mode="r") as file:
-            reader = csv.reader(file)
-            for row in reader:
-                if row[0] == "music":
-                    settings["music_on"] = row[1] == "on"
-                elif row[0] == "sfx":
-                    settings["sound_effects_on"] = row[1] == "on"
-    except FileNotFoundError:
-        print("Settings file not found. Using default settings.")
-    return settings
-
-# Load settings and set volumes
-settings = load_settings()
-music_volume = 0.5 if settings["music_on"] else 0
-sfx_volume = 0.5 if settings["sound_effects_on"] else 0
-
 
 class Fighter():
+    #test
     def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,block,health, data, sprite_sheet, animation_steps):
         self.finisher_status = False
         self.parry_window = False #parry window is the period of time in which you are able to parry
@@ -103,30 +83,30 @@ class Fighter():
         self.winner = None  # Attribute to track the winner
         #load audio
         pygame.mixer.music.load("files/audio/background_music.mp3")
-        pygame.mixer.music.set_volume(music_volume)  # Set initial volume based on settings
+        pygame.mixer.music.set_volume(0.2)
         pygame.mixer.music.play(-1)  #loop infinitely
         self.light_attack_sound = pygame.mixer.Sound("files/audio/lighthit.wav") #load all sound effects
-        self.light_attack_sound.set_volume(sfx_volume)  # Set initial volume based on settings
+        self.light_attack_sound.set_volume(0.5)
         self.medium_attack_sound = pygame.mixer.Sound("files/audio/mediumhit.wav")
-        self.medium_attack_sound.set_volume(sfx_volume)  # Set initial volume based on settings
+        self.medium_attack_sound.set_volume(0.5)
         self.heavy_attack_sound = pygame.mixer.Sound("files/audio/heavyhit.wav")
-        self.heavy_attack_sound.set_volume(sfx_volume)  # Set initial volume based on settings
+        self.heavy_attack_sound.set_volume(0.5)
         self.finisher_attack_sound = pygame.mixer.Sound("files/audio/finisher.wav")
-        self.finisher_attack_sound.set_volume(sfx_volume)  # Set initial volume based on settings
+        self.finisher_attack_sound.set_volume(0.5)
         self.blocked_attack_sound = pygame.mixer.Sound("files/audio/blockedatk.wav")
-        self.blocked_attack_sound.set_volume(sfx_volume)  # Set initial volume based on settings
+        self.blocked_attack_sound.set_volume(0.5)
         self.parried_attack_sound = pygame.mixer.Sound("files/audio/parriedatk.wav")
-        self.parried_attack_sound.set_volume(sfx_volume)  # Set initial volume based on settings
+        self.parried_attack_sound.set_volume(0.5)
         self.missed_attack_sound = pygame.mixer.Sound("files/audio/missedatk.wav")
-        self.missed_attack_sound.set_volume(sfx_volume)  # Set initial volume based on settings
+        self.missed_attack_sound.set_volume(0.5)
         self.death_effect_sound = pygame.mixer.Sound("files/audio/death.wav")
-        self.death_effect_sound.set_volume(sfx_volume)  # Set initial volume based on settings
+        self.death_effect_sound.set_volume(0.5)
         self.lfighterfinisher_sound = pygame.mixer.Sound("files/audio/lfighterfinisher.wav")
-        self.lfighterfinisher_sound.set_volume(sfx_volume)  # Set initial volume based on settings
+        self.lfighterfinisher_sound.set_volume(0.5)
         self.mfighterfinisher_sound = pygame.mixer.Sound("files/audio/mfighterfinisher.wav")
-        self.mfighterfinisher_sound.set_volume(sfx_volume)  # Set initial volume based on settings
+        self.mfighterfinisher_sound.set_volume(0.5)
         self.hfighterfinisher_sound = pygame.mixer.Sound("files/audio/hfighterfinisher.wav")
-        self.hfighterfinisher_sound.set_volume(sfx_volume)  # Set initial volume based on settings
+        self.hfighterfinisher_sound.set_volume(0.5)
   
         
 #extract the images from the spritesheet for the current character selected
@@ -244,65 +224,68 @@ class Fighter():
             self.attack_cooldown -= 1
 
     def frame_handler(self):
-        #order priority - death, hit, jump, attack, walk, idle
+        #order priority - death, hit, jump, attack, walk, idle - if order is changed causes errors like can attack while jumping or unable to walk + attack at once
         if self.health <= 0:
             self.alive = False
-            self.action_handler(6)  # death
-        elif self.hit:
-            self.action_handler(5)  # hit
-        elif self.jump:
-            self.action_handler(7)  # jump
-        elif self.attacking:
-            if self.attack_type == 1:
-                self.action_handler(2)  # l_attack
-            elif self.attack_type == 2:
-                self.action_handler(3)  # m_attack
-            elif self.attack_type == 3:
-                self.action_handler(4)  # h_attack
-            elif self.attack_type == 4:
-                self.action_handler(9)  # finisher
-                self.finisher_status = False
-        elif self.moving:
-            self.action_handler(1)  # walk
-        elif self.blocking and not self.moving:
-            self.action_handler(8)  # block
-        else:
-            self.action_handler(0)  # idle
+            self.action_handler(6)#death
+        elif self.hit == True:
+            self.action_handler(5)#hit
 
+
+        elif self.jump == True:
+            self.action_handler(7)#jump
+        elif self.attacking == True:
+            if self.attack_type == 1:
+                self.action_handler(2)#lattack
+            elif self.attack_type == 2:   
+                self.action_handler(3)#mattack
+            elif self.attack_type == 3:
+                self.action_handler(4)#hattack
+            elif self.attack_type == 4:
+                self.action_handler(9)#finisher
+                self.finisher_status = False
+        
+        elif self.moving == True:
+            self.action_handler(1)#walk
+        elif self.blocking == True and not self.moving:
+            self.action_handler(8)
+        else:
+            self.action_handler(0)#idle
+    
         self.image = self.animation_list[self.action][self.frame_index]
         animation_cooldown = 150
         if pygame.time.get_ticks() - self.update_time > animation_cooldown:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
-            if self.frame_index >= len(self.animation_list[self.action]):  # End of animation
-                if not self.alive:
-                    self.frame_index = len(self.animation_list[self.action]) - 1  # Last frame of death animation
+            if self.frame_index >= len(self.animation_list[self.action]):  #if the frame index is at the end of the current animation
+                #check for player K.O
+                if self.alive == False:
+                    self.frame_index = len(self.animation_list[self.action]) -1 #set the frame index to the last frame of the death animation
                 else:
-                    self.frame_index = 0  # Reset frame index
-                    if self.action in [2, 3, 4, 9]:
-                        self.attacking = False  # Reset attacking after attack animation
-
-                        # Define cooldown values for each class
-                        cooldown_values = {
-                            "light": 10,
-                            "medium": 15,
-                            "heavy": 20
-                        }
-
-                        # Set attack cooldown based on player class
-                        if p1_selected in cooldown_values and p2_selected in cooldown_values:
-                            if p1_selected != p2_selected:
-                                self.attack_cooldown = cooldown_values[p1_selected]
-
-                        # Reset finisher value after use
-                        if self.finisher_status:
+                    self.frame_index = 0  #reset the frame index
+                    if self.action in [2,3,4,9]:
+                        self.attacking = False  #only have self.attacking reset to false when the attack is done
+                        if p1_selected == "light" and p2_selected != "light":
+                            self.attack_cooldown = 10
+                        if p2_selected == "light" and p1_selected != "light":
+                            self.attack_cooldown = 10
+                        elif p1_selected == "medium" and p2_selected != "medium":
+                            self.attack_cooldown = 15
+                        elif p2_selected == "medium" and p1_selected != "medium":
+                            self.attack_cooldown = 15
+                        elif p1_selected == "heavy" and p2_selected != "heavy":
+                            self.attack_cooldown = 20
+                        elif p2_selected == "heavy" and p1_selected != "heavy":
+                            self.attack_cooldown = 20
+                        #reset the finisher value to 0 after the finisher is used
+                        if self.finisher_status == True:
                             self.finisher_value = 0
-
-                    if self.hit:
-                        # Interrupt attack if hit during wind-up
+                    if self.hit == True: 
+                        #interrupt attack if attacked during wind up
                         self.attacking = False
                         self.attack_cooldown = 10
-
+                
+            
     def action_handler(self,new_action):
         #check if new action is different to previous one
         if new_action != self.action:
@@ -321,67 +304,97 @@ class Fighter():
     def attack(self, surface, target):
         if self.attack_cooldown == 0:
             self.attacking = True
-            attack_hitbox = pygame.Rect(
-                self.rect.centerx - (2 * self.rect.width * self.flip),
-                self.rect.y,
-                2 * self.rect.width + 100,
-                self.rect.height
-            )
+            attack_hitbox = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y, 2 * self.rect.width + 100, self.rect.height)
             
-            # Define damage and knockback values for each class
-            attack_values = {
-                "light": {"damage": [5, 10, 15], "knockback": [3, 6, 9]},
-                "medium": {"damage": [7, 15, 20], "knockback": [5, 8, 12]},
-                "heavy": {"damage": [10, 20, 30], "knockback": [7, 10, 15]},
-            }
+            # Debugging: Print selected classes
+            print(f"p1_selected: {p1_selected}, p2_selected: {p2_selected}")
 
-            # Assign player classes based on the selected characters
-            p1_character = p1_selected  # Player 1's selected character class
-            p2_character = p2_selected  # Player 2's selected character class
-
-            # Check attack hit
+            # Check attack hit 
             if attack_hitbox.colliderect(target.rect):
-                # If the target is not blocking or parrying
+                # Attack logic - can only be damaged when not blocking or parrying
                 if not target.blocking and not target.parry_window:
-                    if self.attack_type in [1, 2, 3]:  # Light, Medium, Heavy attacks
-                        damage = attack_values[p1_character]["damage"][self.attack_type - 1]
-                        knockback = attack_values[p1_character]["knockback"][self.attack_type - 1]
-                        target.damage(damage, target, knockback)
-                        target.hitstun(100 * self.attack_type)
-                        self.finisher_meter(10 * self.attack_type)
-                        if self.attack_type == 1:
-                            self.light_attack_sound.play()
-                        elif self.attack_type == 2:
-                            self.medium_attack_sound.play()
-                        elif self.attack_type == 3:
-                            self.heavy_attack_sound.play()
-                    elif self.attack_type == 4:  # Finisher
+                    if self.attack_type == 1:
+                        if p1_selected == "light" and p2_selected != "light":
+                            target.damage(5, target, 3)
+                        elif p2_selected == "light" and p1_selected != "light":
+                            target.damage(5, target, 3)
+                        elif p1_selected == "medium" and p2_selected != "medium":
+                            target.damage(7, target, 5)
+                        elif p2_selected == "medium" and p1_selected != "medium":
+                            target.damage(100, target, 5)
+                        elif p1_selected == "heavy" and p2_selected != "heavy":
+                            target.damage(10, target, 7)
+                        elif p2_selected == "heavy" and p1_selected != "heavy":
+                            target.damage(10, target, 7)
+                        target.hitstun(100)
+                        self.finisher_meter(10)
+                        self.light_attack_sound.play()
+
+                    elif self.attack_type == 2:
+                        if p1_selected == "light" and p2_selected != "light":
+                            target.damage(10, target, 6)
+                        elif p2_selected == "light" and p1_selected != "light":
+                            target.damage(10, target, 6)
+                        elif p1_selected == "medium" and p2_selected != "medium":
+                            target.damage(15, target, 8)
+                        elif p2_selected == "medium" and p1_selected != "medium":
+                            target.damage(15, target, 8)
+                        elif p1_selected == "heavy" and p2_selected != "heavy":
+                            target.damage(3000, target, 10)
+                        elif p2_selected == "heavy" and p1_selected != "heavy":
+                            target.damage(20, target, 10)
+                        target.hitstun(300)
+                        self.finisher_meter(15)
+                        self.medium_attack_sound.play()
+                    
+                    elif self.attack_type == 3:
+                        if p1_selected == "light" and p2_selected != "light":
+                            target.damage(15, target, 9)
+                        elif p2_selected == "light" and p1_selected != "light":
+                            target.damage(15, target, 9)
+                        elif p1_selected == "medium" and p2_selected != "medium":
+                            target.damage(20, target, 12)
+                        elif p2_selected == "medium" and p1_selected != "medium":
+                            target.damage(20, target, 12)
+                        elif p1_selected == "heavy" and p2_selected != "heavy":
+                            target.damage(30, target, 15)
+                        elif p2_selected == "heavy" and p1_selected != "heavy":
+                            target.damage(30, target, 15)
+                        target.hitstun(700)
+                        self.heavy_attack_sound.play()
+                        self.finisher_meter(20)
+
+                    elif self.attack_type == 4:
                         self.mfighterfinisher_sound.play()
-                        if self.finisher_status:
+                        if self.finisher_status == True:
                             target.hitstun(1000)
                             target.damage(50, target, 20)
 
-                # Parry logic - if the target is in a parry window
+                #parry logic - parrying only happens when parry_window is True 
                 elif target.parry_window:
                     target.finisher_meter(200)
                     print("parried")
                     self.parried_attack_sound.play()
+                    
                     self.hitstun(500)
                     self.attack_cooldown = 30
-                    parry_effect_x = self.rect.centerx - 100
+                    if self.flip == False: 
+                        parry_effect_x = self.rect.centerx - 100
+                    else:
+                        parry_effect_x = self.rect.centerx - 100
                     parry_effect_y = self.rect.top - 60
                     surface.blit(self.parry_effect, (parry_effect_x, parry_effect_y))
-
-                # Blocking logic - if the target is blocking
+                
+                #blocking logic - damage only negated if blocking
                 elif target.blocking:
-                    # Heavy class attacks can break blocking
-                    if p1_character == "heavy":
+                    #blocking can be broke by heavy class heavy attack
+                    if p1_selected == "heavy" or p2_selected == "heavy":
                         target.damage(20, target, 10)
                         target.hitstun(1000)
                         target.hit = True
                         self.finisher_meter(20)
                         self.heavy_attack_sound.play()
-                    else:
+                    else:    
                         print("blocked")
                         self.blocked_attack_sound.play()
             else:

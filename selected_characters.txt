@@ -1,2 +1,2 @@
-heavy
+medium
 light

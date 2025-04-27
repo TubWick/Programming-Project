@@ -1,10 +1,7 @@
-
-
-
-
 import pygame
 import sys
 import os
+import csv  # Fix: Import the csv module
 from pygame import mixer
 import shared_state  # Import the shared state module
 
@@ -23,10 +20,26 @@ height = screen.get_height()
 button_width = 220
 button_height = 50
 
-smallfont = pygame.font.Font('files/mini_pixel-7.ttf',50)
-shenttpuro = pygame.font.Font('files/Shenttpuro Font.ttf',100)
-text_surf = shenttpuro.render( 'First Strike',True, (255, 10, 10) )
+smallfont = pygame.font.Font('files/mini_pixel-7.ttf', 50)  
+shenttpuro = pygame.font.Font('files/Shenttpuro Font.ttf', 120)  
+text_surf = shenttpuro.render('First Strike', True, (255, 10, 10))
 screen_state = 0
+
+# Global settings state
+settings = {
+    "music_on": True,
+    "sound_effects_on": True
+}
+
+def toggle_music():
+    settings["music_on"] = not settings["music_on"]
+    if settings["music_on"]:
+        mixer.music.unpause()
+    else:
+        mixer.music.pause()
+
+def toggle_sound_effects():
+    settings["sound_effects_on"] = not settings["sound_effects_on"]
 
 #classes
 class Button:
@@ -34,7 +47,7 @@ class Button:
         self.x = x
         self.y = y
         self.width = width
-        self.height = height
+        self.height = height  
         self.text = text
         self.action = action
         self.colour_normal = colour_light
@@ -83,19 +96,38 @@ class BackButton(Button):
 #lb = leaderboard
 
 class Leaderboard:
-    def __init__(self,x,y):
-        self.x,self.y = x,y
-        self.lbfont = pygame.font.Font('files/mini_pixel-7.ttf', 70)
+    def __init__(self, x, y, file_path="name.csv"):
+        self.x, self.y = x, y
+        self.file_path = file_path
+        self.lbfont = pygame.font.Font('files/mini_pixel-7.ttf', 50)  # Separate font instance for leaderboard
         self.lbwidth = 400
         self.lbheight = 600
-    def draw_leaderboard(self):
-        backbutton.imagedraw()
-        leaderboard_rect=pygame.Rect((self.x // 2 - self.lbwidth//2, self.y //2 - self.lbheight//2),(self.lbwidth, self.lbheight))
-        pygame.draw.rect(screen,(colour_dark),leaderboard_rect)
-        lbtitlesurf = self.lbfont.render('Leaderboard',True,(255,255,255))
-        screen.blit(lbtitlesurf,(self.x // 2 - lbtitlesurf.get_width()//2, self.y // 2 - self.lbheight // 2))
 
-#button actions changing screenstate
+    def get_sorted_leaderboard(self):
+        try:
+            with open(self.file_path, mode="r") as file:
+                reader = csv.reader(file)
+                leaderboard = [row for row in reader if len(row) == 2 and row[1].isdigit()]  # Validate rows
+                leaderboard = sorted(leaderboard, key=lambda x: int(x[1]))  # Sort by time
+                return leaderboard
+        except FileNotFoundError:
+            print("Leaderboard file not found.")
+            return []
+
+    def draw_leaderboard(self, screen):
+        backbutton.imagedraw()
+        leaderboard_rect = pygame.Rect((self.x // 2 - self.lbwidth // 2, self.y // 2 - self.lbheight // 2), (self.lbwidth, self.lbheight))
+        pygame.draw.rect(screen, colour_dark, leaderboard_rect)
+        lbtitlesurf = self.lbfont.render('Leaderboard', True, (255, 255, 255))
+        screen.blit(lbtitlesurf, (self.x // 2 - lbtitlesurf.get_width() // 2, self.y // 2 - self.lbheight // 2 + 10))
+
+        leaderboard = self.get_sorted_leaderboard()
+        for i, entry in enumerate(leaderboard[:5], start=1):
+            name, time = entry
+            entry_surf = self.lbfont.render(f"{i}. {name}: {time} seconds", True, (255, 255, 255))
+            screen.blit(entry_surf, (self.x // 2 - self.lbwidth // 2 + 20, self.y // 2 - self.lbheight // 2 + 50 + i * 60))  # Adjusted spacing
+
+#button action changing screenstate
 
 def quit_action():
     global screen_state
@@ -125,20 +157,53 @@ def start_match_action():
             file.write(f"{characterselection.p2_selected}\n")
         print("Saved P1:", characterselection.p1_selected, "P2:", characterselection.p2_selected)
         # Launch game.py and exit main.py
+        pygame.quit()
         os.system("python game.py")
         sys.exit()  # Exit main.py
     else:
         print("Both players must select their characters before starting the match.")
 
+# Update settings screen
+def draw_settings_menu():
+    global screen_state
+    backbutton.imagedraw()
+    backbutton.backaction()
+
+    # Create buttons for toggling music and sound effects
+    music_button = Button(
+        width // 2 - button_width // 2,
+        height // 2 - button_height // 2 - 60,
+        button_width,
+        button_height,
+        f"Music: {'On' if settings['music_on'] else 'Off'}",
+        toggle_music
+    )
+    sound_effects_button = Button(
+        width // 2 - button_width // 2,
+        height // 2 - button_height // 2 + 20,
+        button_width,
+        button_height,
+        f"Sound Effects: {'On' if settings['sound_effects_on'] else 'Off'}",
+        toggle_sound_effects
+    )
+
+    # Draw buttons
+    music_button.draw(screen)
+    sound_effects_button.draw(screen)
+
+    # Add a title for the settings menu
+    settings_title = smallfont.render("Settings", True, (255, 255, 255))  # Use smallfont here
+    screen.blit(settings_title, (width // 2 - settings_title.get_width() // 2, height // 2 - button_height // 2 - 150))
+
 # instantiations
-startbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 120, button_width, button_height, "Start", start_action)
-settingsbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 60, button_width, button_height, "Settings", settings_action)
-leaderboardbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2, button_width, button_height, "Leaderboard", leaderboard_action)
-leaderboard = Leaderboard(width,height)
-quitbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 + 60, button_width, button_height, "Quit", quit_action)
+startbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 100, button_width, button_height, "Start", start_action)  # Moved down by 20 pixels
+settingsbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 - 40, button_width, button_height, "Settings", settings_action)  # Moved down by 20 pixels
+leaderboardbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 + 20, button_width, button_height, "Leaderboard", leaderboard_action)  # Moved down by 20 pixels
+quitbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 + 80, button_width, button_height, "Quit", quit_action)  # Moved down by 20 pixels
 backbutton = BackButton(10,10,width,height,lambda: back_button.backaction())
-startmatchbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 + 300, button_width, button_height, "Start Match", start_match_action)
+startmatchbutton = Button(width // 2 - button_width // 2, height // 2 - button_height // 2 + 320, button_width, button_height, "Start Match", start_match_action)  # Moved down by 20 pixels
 characterselection = Charselectionscreen(500, 200)
+leaderboard = Leaderboard(width,height)
 # main game loop
 running = True
 while running:
@@ -176,17 +241,16 @@ while running:
         
     #settings
     if screen_state == 1:
-        backbutton.imagedraw()
-        backbutton.backaction()
-        settingsbutton.draw(screen)
+        draw_settings_menu()
     #leaderboard
     if screen_state == 2:
         backbutton.imagedraw()
         backbutton.backaction()
-        leaderboard.draw_leaderboard()
+        leaderboard = Leaderboard(width, height, "name.csv")  # Pass file path
+        leaderboard.draw_leaderboard(screen)  # Draw the leaderboard
     #main game
     if screen_state == 3:
-        print(screen_state)
+      #  print(screen_state)
         characterselection.draw_cs_screen()
         characterselection.ifhover()
         characterselection.ifclicked(event)
@@ -194,17 +258,18 @@ while running:
         backbutton.imagedraw()
         backbutton.backaction()
         startmatchbutton.draw(screen)
-    if screen_state == 4:
-        if characterselection.p1_selected and characterselection.p2_selected:
-            print("Starting game with P1:", characterselection.p1_selected, "and P2:", characterselection.p2_selected)
-            os.system("python game.py")
-            sys.exit()  # Ensure the current script stops execution
-        else:
-            print("Cannot start game. Both players must select their characters.")
-            screen_state = 3  # Return to character selection screen
 
     pygame.display.update()
 
 
 pygame.quit()
 sys.exit()
+
+from classes import Leaderboard
+
+def show_leaderboard():
+    leaderboard = Leaderboard()
+    leaderboard.display_top_5()
+
+
+show_leaderboard()

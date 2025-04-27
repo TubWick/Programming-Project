@@ -15,19 +15,18 @@ from fighter import Fighter
 from characterselection import Charselectionscreen
 from pygame import mixer
 import csv
-from test_button import Button
-from test_button import Leaderboard
+from classes import Button, Leaderboard  # Update import to use classes
 import os
 import shared_state  # Import the shared state module
 import sys
 
 
-def go_back_to_main():
+def mainmenu_action():
     pygame.display.quit()
     os.system("python main.py")
 
  
-mainmenu_button= Button(10,10,100,100, "Main Menu", lambda: go_back_to_main())
+mainmenu_button= Button(10,10,100,100, "Main Menu", lambda: mainmenu_action())
 
 mixer.init()
 pygame.init()
@@ -46,22 +45,27 @@ class Timer:
     def __init__(self):
         self.start_time = 0
         self.active = False
+        self.total_match_time = None  # Store the total match time when the timer stops
 
     def activate(self):
         self.active = True
         self.start_time = pygame.time.get_ticks()
-    
+        self.total_match_time = None  # Reset total match time when reactivated
+
     def deactivate(self):
-        self.active = False 
-        self.start_time = 0
-    
+        if self.active:
+            self.active = False
+            self.total_match_time = (pygame.time.get_ticks() - self.start_time) // 1000  # Record match time
+            self.start_time = 0
+
     def update(self):
         if self.active:
             current_time = pygame.time.get_ticks()
-            time_surf= smallfont.render(str((pygame.time.get_ticks() - (match_timer.start_time)) // 1000), True, (255,255,255)).convert_alpha()
-            time_surf_outline= smallfont.render(str((pygame.time.get_ticks() - (match_timer.start_time)) // 1000), True, (0,0,0)).convert_alpha()
-            screen.blit(time_surf_outline,(width//2 - 7, height//2 - 297))
-            screen.blit(time_surf,(width//2 - 10, height//2 - 300))
+            elapsed_time = (current_time - self.start_time) // 1000
+            time_surf = smallfont.render(str(elapsed_time), True, (255, 255, 255)).convert_alpha()
+            time_surf_outline = smallfont.render(str(elapsed_time), True, (0, 0, 0)).convert_alpha()
+            screen.blit(time_surf_outline, (width // 2 - 7, height // 2 - 297))
+            screen.blit(time_surf, (width // 2 - 10, height // 2 - 300))
 
 match_timer = Timer()
 match_timer.activate()
@@ -73,7 +77,7 @@ screen = pygame.display.set_mode((res))
 pygame.display.set_caption("Fighting game")
 
 smallfont = pygame.font.Font('files/mini_pixel-7.ttf',100)
-errorfont = pygame.font.Font('files/Game Paused DEMO.ttf',50)
+errorfont = pygame.font.Font('files/Game Paused DEMO.ttf',30)
 gameoverfont = pygame.font.Font('files/mini_pixel-7.ttf',150)
 winscreenfont = pygame.font.Font('files/mini_pixel-7.ttf',125)
 colour_dark = (100, 100, 100)
@@ -83,6 +87,7 @@ input_text = ""  # The text the user types
 input_active = False 
 #define fighter variables
 FIGHTER_SIZE = 200
+
 
 #the scale for each sprite
 FIGHTER_SCALE = 4
@@ -110,30 +115,80 @@ heavy_animation_steps =   [4,4,3,3,3,1,4,3,1,6]
 #set framerate
 clock = pygame.time.Clock()
 
-def pause_menu():
-    paused = True
-    while paused:
-        screen.fill((0, 0, 0)) 
-        pause_text = gameoverfont.render("PAUSED", True, (255, 255, 255))
-        resume_text = smallfont.render("Press R to Resume", True, (255, 255, 255))
-        quit_text = smallfont.render("Press Q to Quit", True, (255, 255, 255))
-        # display pause menu text
-        screen.blit(pause_text, (width // 2 - pause_text.get_width() // 2, height // 2 - 150))
-        screen.blit(resume_text, (width // 2 - resume_text.get_width() // 2, height // 2))
-        screen.blit(quit_text, (width // 2 - quit_text.get_width() // 2, height // 2 + 100))
-        pygame.display.update()
+# Initialize global variables
+valid_input_made = False  # Fix: Initialize valid_input_made
+error_message = ""  # Initialize error_message
 
-        #handle events in the pause menu
+def restart_match():
+    global fighter_1, fighter_2, match_timer, match_end_time, match_end_trigger
+    # Reinitialize fighters
+    fighters.InitialiseFighters()
+    fighter_1 = fighters.fighter_1
+    fighter_2 = fighters.fighter_2
+    # Reset match timer and end conditions
+    match_timer.activate()
+    match_end_time = 0
+    match_end_trigger = False
+
+def confirm_quit():
+    # Confirmation dialog for quitting
+    confirm = True
+    while confirm:
+        screen.fill((0, 0, 0))
+        confirm_text = gameoverfont.render("Are you sure?", True, (255, 255, 255))
+        yes_button = Button(width // 2 - 150, height // 2 + 10, 100, 50, "Yes", lambda: sys.exit())  # Moved down by 10 pixels
+        no_button = Button(width // 2 + 50, height // 2 + 10, 100, 50, "No", lambda: False)  # Moved down by 10 pixels
+
+        screen.blit(confirm_text, (width // 2 - confirm_text.get_width() // 2, height // 2 - 100))
+        yes_button.draw(screen)
+        no_button.draw(screen)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r:  #resume
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if yes_button.get_hovered():
+                    yes_button.click()
+                elif no_button.get_hovered():
+                    confirm = False
+
+        pygame.display.update()
+
+def pause_menu():
+    paused = True
+    resume_button = Button(width // 2 - 100, height // 2 - 80, 200, 50, "Resume", lambda: False)  # Moved down by 20 pixels
+    restart_button = Button(width // 2 - 100, height // 2 - 20, 200, 50, "Restart", restart_match)  # Moved down by 20 pixels
+    main_menu_button = Button(width // 2 - 100, height // 2 + 40, 200, 50, "Main Menu", mainmenu_action)  # Moved down by 20 pixels
+    quit_button = Button(width // 2 - 100, height // 2 + 100, 200, 50, "Quit", confirm_quit)  # Moved down by 20 pixels
+
+    while paused:
+        screen.fill((0, 0, 0))
+        pause_text = gameoverfont.render("PAUSED", True, (255, 255, 255))
+        screen.blit(pause_text, (width // 2 - pause_text.get_width() // 2, height // 2 - 200))
+
+        # Draw buttons
+        resume_button.draw(screen)
+        restart_button.draw(screen)
+        main_menu_button.draw(screen)
+        quit_button.draw(screen)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if resume_button.get_hovered():
+                    paused = resume_button.click()
+                elif restart_button.get_hovered():
+                    restart_button.click()
                     paused = False
-                elif event.key == pygame.K_q:  #quit
-                    pygame.quit()
-                    exit()
+                elif main_menu_button.get_hovered():
+                    main_menu_button.click()
+                elif quit_button.get_hovered():
+                    quit_button.click()
+
+        pygame.display.update()
 
 def draw_bg():
     width = screen.get_width()
@@ -158,6 +213,7 @@ def end_match(health,x,y):
     if health <= 0:
         if match_end_time == 0:
             match_end_time = pygame.time.get_ticks()
+            match_timer.deactivate()  # Pause the timer and record the match time
         current_time = pygame.time.get_ticks()
         flash_duration = 500
         #takes the current time, divs it by 2 t get either 2 or a 1, and then mod it by 2 to get a one or a 0
@@ -168,16 +224,20 @@ def end_match(health,x,y):
             end_text_fill = gameoverfont.render("K.O", True, (255,255,0)).convert_alpha()
             screen.blit(end_text_outline,(x+45,y-20))
             screen.blit(end_text_fill,(x+40, y-20))
-            screen.blit(end_text_body,(x+25, y-15))
+            screen.blit(end_text_body,(x+35, y-20))
 
 def win_screen(x, y, text_colour):
     global input_box
     global input_text 
     global input_active  
+    global mainmenu_button
+    global valid_input_made  # Ensure valid_input_made is global
+    global error_message  # Ensure error_message is global
+
     screen.fill((0, 0, 0))
 
     # Check for Player 1 win
-    if fighter_1.winner or fighter_2.winner == "Player 1":
+    if fighter_1.winner == "Player 1" or fighter_2.winner == "Player 1":
         win_text_body = winscreenfont.render("PLAYER 1 WINS", True, ((255, 10, 20))).convert_alpha()
         if p1_selected == "light":
             screen.blit(lighticon, (x + 120, y - 175))
@@ -187,7 +247,7 @@ def win_screen(x, y, text_colour):
             screen.blit(heavyicon, (x + 120, y - 175))
 
     # Check for Player 2 win
-    elif fighter_1.winner or fighter_2.winner == "Player 2":
+    elif fighter_1.winner == "Player 2" or fighter_2.winner == "Player 2":
         win_text_body = winscreenfont.render("PLAYER 2 WINS", True, ((255, 10, 20))).convert_alpha()
         if p2_selected == "light":
             screen.blit(lighticon, (x + 120, y - 175))
@@ -203,9 +263,10 @@ def win_screen(x, y, text_colour):
     # Display the winner text
     screen.blit(win_text_body, (x - 250, y - 300))
 
-    # Draw the main menu button
-    mainmenu_button.draw(screen)
-    mainmenu_button.click()
+    # Display match time
+    if match_timer.total_match_time is not None:
+        time_text = smallfont.render(f"Time: {match_timer.total_match_time} seconds", True, (255, 255, 255))
+        screen.blit(time_text, (x - 150, y - 200))
 
     # Handle input for saving player initials
     for event in pygame.event.get():
@@ -214,19 +275,21 @@ def win_screen(x, y, text_colour):
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if input_box.collidepoint(event.pos):
                 input_active = True
-                print("selected")
             else:
                 input_active = False
-        elif event.type == pygame.KEYDOWN:
+        elif event.type == pygame.KEYDOWN and not valid_input_made:
             if event.key == pygame.K_RETURN:
-                if len(input_text) <= 0 or len(input_text) > 2:
-                    print("cant be empty or more than 2")
+                if len(input_text) <= 0:
+                    error_message = "Input cannot be blank"
+                elif len(input_text) > 2:
+                    error_message = "Input has to be less than two characters"
                 else:
-                    print("opening")
+                    
                     with open("name.csv", mode="a", newline="") as file:
                         writer = csv.writer(file)
-                        writer.writerow([input_text])
-                    print(f"User typed: {input_text}")  
+                        writer.writerow([input_text, match_timer.total_match_time])  # Save name and time
+                    valid_input_made = True  # Mark valid input as made
+                    error_message = ""  # Clear the error message
                 input_text = ""
             elif event.key == pygame.K_BACKSPACE:
                 input_text = input_text[:-1]
@@ -234,31 +297,41 @@ def win_screen(x, y, text_colour):
                 input_text += event.unicode
 
     # Draw input box for initials
-    pygame.draw.rect(screen, (255, 255, 255), input_box)
-    text_surface = smallfont.render(input_text, True, (0, 0, 255))
-    screen.blit(text_surface, (input_box.x + 5, input_box.y + 5))
+    if not valid_input_made:
+        pygame.draw.rect(screen, (255, 255, 255), input_box)
+        text_surface = smallfont.render(input_text, True, (0, 0, 255))
+        screen.blit(text_surface, (input_box.x + 5, input_box.y + 5))
+
+        # Display error message if any
+        if error_message:
+            error_surface = errorfont.render(error_message, True, (255, 0, 0))
+            screen.blit(error_surface, (input_box.x, input_box.y + 110))
+    else:
+        # Show main menu button only after valid input
+        mainmenu_button.draw(screen)
+        mainmenu_button.click()
 
 width = screen.get_width()
 height = screen.get_height()
 
-class create_fighters:
+class CreateFighters:
     def __init__(self, p1_character, p2_character):
         self.p1_character = p1_character
         self.p2_character = p2_character
         self.fighter_1 = None  # Initialize as None
         self.fighter_2 = None  # Initialize as None
 
-    def initialise_fighters(self):
+    def InitialiseFighters(self):
         print(f"Player 1 selected: {self.p1_character}")
         print(f"Player 2 selected: {self.p2_character}")
         if self.p1_character == "light":
-            self.fighter_1 = Fighter(200, 350, "a", "d", "w", "x", "c", "v", "f", 100, LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
+            self.fighter_1 = Fighter(200, 350, "a", "d", "w", "x", "c", "v", "f",100, LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
         elif self.p1_character == "medium":
             self.fighter_1 = Fighter(200, 350, "a", "d", "w", "x", "c", "v", "f", 100, MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
         elif self.p1_character == "heavy":
             self.fighter_1 = Fighter(200, 350, "a", "d", "w", "x", "c", "v", "f", 100, HEAVY_FIGHTER_DATA, heavy_fighter_sheet, heavy_animation_steps)
         if self.p2_character == "light":
-            self.fighter_2 = Fighter(700, 350, "LEFT", "RIGHT", "UP", "B", "N", "M", "l", 100, LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
+            self.fighter_2 = Fighter(700, 350, "LEFT", "RIGHT", "UP", "B", "N", "M", "l", 0, LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
         elif self.p2_character == "medium":
             self.fighter_2 = Fighter(700, 350, "LEFT", "RIGHT", "UP", "B", "N", "M", "l", 100, MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
         elif self.p2_character == "heavy":
@@ -283,8 +356,8 @@ print(f"Player 1 selected: {p1_selected}")
 print(f"Player 2 selected: {p2_selected}")
 
 # Ensure selected characters are valid before initializing fighters
-fighters = create_fighters(p1_selected, p2_selected)
-fighters.initialise_fighters()
+fighters = CreateFighters(p1_selected, p2_selected)
+fighters.InitialiseFighters()
 
 # Access fighters globally
 fighter_1 = fighters.fighter_1
@@ -335,9 +408,9 @@ while run:
     fighter_1.move(width, height, screen, fighter_2, events)
     fighter_2.move(width, height, screen, fighter_1, events)
 
-    if match_timer.active:
+    # Update timer
+    if match_timer.active and not match_end_trigger:
         match_timer.update()
-    
 
     if match_end_time != 0:
         if pygame.time.get_ticks() - match_end_time > 5000:

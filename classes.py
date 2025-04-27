@@ -1,4 +1,5 @@
 import pygame
+import csv
 
 # Initialize Pygame modules
 pygame.init()
@@ -22,8 +23,8 @@ class Button:
         self.height = height
         self.text = text
         self.action = action
-        self.colour_normal = (255,0,0)
-        self.colour_hover = (0,255,0)
+        self.colour_normal = colour_dark
+        self.colour_hover = colour_light
         self.rect=pygame.Rect(self.x,self.y,self.width,self.height)
     #draw button
     def draw(self, screen):
@@ -60,22 +61,31 @@ class BackButton(Button):
     def imagedraw(self):
         screen.blit(self.back_img,(self.rect.x,self.rect.y))
 
-#class leaderboard
-#open to csv
-#add the score to the list of scores in the csv
-#sort the scores - use bubble sort
-#draw the list
-#lb = leaderboard
-
 class Leaderboard:
-    def __init__(self,x,y):
-        self.x,self.y = x,y
-        self.lbfont = pygame.font.Font('files/mini_pixel-7.ttf', 70)
-        self.lbwidth = 400
-        self.lbheight = 600
-    def draw_leaderboard(self):
-        backbutton.imagedraw()
-        leaderboard_rect=pygame.Rect((self.x // 2 - self.lbwidth//2, self.y //2 - self.lbheight//2),(self.lbwidth, self.lbheight))
-        pygame.draw.rect(screen,(colour_dark),leaderboard_rect)
-        lbtitlesurf = self.lbfont.render('Leaderboard',True,(255,255,255))
-        screen.blit(lbtitlesurf,(self.x // 2 - lbtitlesurf.get_width()//2, self.y // 2 - self.lbheight // 2))
+    def __init__(self, file_path="name.csv"):
+        self.file_path = file_path
+
+    def get_sorted_leaderboard(self):
+        try:
+            with open(self.file_path, mode="r") as file:
+                reader = csv.reader(file)
+                leaderboard = sorted(reader, key=lambda x: int(x[1]))  # Sort by time (second column)
+                return leaderboard
+        except FileNotFoundError:
+            print("Leaderboard file not found.")
+            return []
+
+    def display_top_5(self, screen, x, y):
+        leaderboard = self.get_sorted_leaderboard()
+        font = pygame.font.Font('files/mini_pixel-7.ttf', 30)
+        title_surf = font.render("Top 5 Fastest Times", True, (255, 255, 255))
+        screen.blit(title_surf, (x, y))
+
+        for i, entry in enumerate(leaderboard[:5], start=1):
+            name, time = entry
+            entry_surf = font.render(f"{i}. {name}: {time} seconds", True, (255, 255, 255))
+            screen.blit(entry_surf, (x, y + 40 * i))
+
+def play_sound_effect(sound):
+    if settings["sound_effects_on"]:
+        sound.play()
