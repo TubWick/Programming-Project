@@ -1,5 +1,7 @@
 import pygame
 import csv  # Import csv module
+from pygame import mixer
+mixer.init()
 
 #errors i encountered x = didnt fix v = did! 
 #v - when i attack whilst moving, become trapped in walking animation
@@ -46,9 +48,9 @@ def load_settings():
             reader = csv.reader(file)
             for row in reader:
                 if row[0] == "music":
-                    settings["music_on"] = row[1] == "on"
+                    settings["music_on"] = row[1].strip().lower() == "on"
                 elif row[0] == "sfx":
-                    settings["sound_effects_on"] = row[1] == "on"
+                    settings["sound_effects_on"] = row[1].strip().lower() == "on"
     except FileNotFoundError:
         print("Settings file not found. Using default settings.")
     return settings
@@ -58,6 +60,9 @@ settings = load_settings()
 music_volume = 0.5 if settings["music_on"] else 0
 sfx_volume = 0.5 if settings["sound_effects_on"] else 0
 
+pygame.mixer.music.set_volume(music_volume)
+print(f"Music volume: {music_volume}")
+print(f"Sound effects volume: {sfx_volume}")
 
 class Fighter():
     def __init__(self,x,y,input_left,input_right,input_up,attack1,attack2,attack3,block,health, data, sprite_sheet, animation_steps):
@@ -360,6 +365,7 @@ class Fighter():
                         if self.finisher_status:
                             target.hitstun(1000)
                             target.damage(50, target, 20)
+                            self.finisher_value = 0  # Reset finisher meter
 
                 # Parry logic - if the target is in a parry window
                 elif target.parry_window:

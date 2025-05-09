@@ -283,11 +283,12 @@ def win_screen(x, y, text_colour):
                     error_message = "Input cannot be blank"
                 elif len(input_text) > 2:
                     error_message = "Input has to be less than two characters"
-                else:
+                else: 
                     
                     with open("name.csv", mode="a", newline="") as file:
                         writer = csv.writer(file)
                         writer.writerow([input_text, match_timer.total_match_time])  # Save name and time
+                        print(f"Time: {match_timer.total_match_time}")  # Debugging
                     valid_input_made = True  # Mark valid input as made
                     error_message = ""  # Clear the error message
                 input_text = ""
@@ -331,7 +332,7 @@ class CreateFighters:
         elif self.p1_character == "heavy":
             self.fighter_1 = Fighter(200, 350, "a", "d", "w", "x", "c", "v", "f", 100, HEAVY_FIGHTER_DATA, heavy_fighter_sheet, heavy_animation_steps)
         if self.p2_character == "light":
-            self.fighter_2 = Fighter(700, 350, "LEFT", "RIGHT", "UP", "B", "N", "M", "l", 0, LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
+            self.fighter_2 = Fighter(700, 350, "LEFT", "RIGHT", "UP", "B", "N", "M", "l", 100, LIGHT_FIGHTER_DATA, light_fighter_sheet, light_animation_steps)
         elif self.p2_character == "medium":
             self.fighter_2 = Fighter(700, 350, "LEFT", "RIGHT", "UP", "B", "N", "M", "l", 100, MEDIUM_FIGHTER_DATA, medium_fighter_sheet, medium_animation_steps)
         elif self.p2_character == "heavy":

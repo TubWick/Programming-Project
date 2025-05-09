@@ -28,7 +28,7 @@ class Fighter():
         self.finisher_status = False
         self.parry_window = False #parry window is the period of time in which you are able to parry
         self.parry_timer = 0 #measures how long the parry has been going
-        self.parry_duration = 300 #the maximum time the parry can go
+        self.parry_duration = 00 #the maximum time the parry can go
         self.hitstun_start = 0 #the time the player is stunned for when hit
         self.hitstun_duration = 0 #the duration of the hitstun
         self.size = data[0] #the size of the sprite - taken from the data list which is passed in as a parameter to take FIGHTER_DATA
@@ -63,32 +63,30 @@ class Fighter():
         self.attack_cooldown = 0 #cooldown between attakcs
         self.hit = False #if the player is hit
         self.alive = True #if the player is alive
-        #load audio
-     #   pygame.mixer.music.load("files/audio/background_music.mp3")
-    #    pygame.mixer.music.set_volume(0.2)
+
         #pygame.mixer.music.play(-1)  #loop infinitely
-     #   self.light_attack_sound = pygame.mixer.Sound("files/audio/lighthit.wav") #load all sound effects
-    #    self.light_attack_sound.set_volume(0.5)
-   #     self.medium_attack_sound = pygame.mixer.Sound("files/audio/mediumhit.wav")
-  #      self.medium_attack_sound.set_volume(0.5)
- #       self.heavy_attack_sound = pygame.mixer.Sound("files/audio/heavyhit.wav")
-#        self.heavy_attack_sound.set_volume(0.5)
-        #self.finisher_attack_sound = pygame.mixer.Sound("files/audio/finisher.wav")
-       # self.finisher_attack_sound.set_volume(0.5)
-      #  self.blocked_attack_sound = pygame.mixer.Sound("files/audio/blockedatk.wav")
-     #   self.blocked_attack_sound.set_volume(0.5)
-    #    self.parried_attack_sound = pygame.mixer.Sound("files/audio/parriedatk.wav")
-   #     self.parried_attack_sound.set_volume(0.5)
-  #      self.missed_attack_sound = pygame.mixer.Sound("files/audio/missedatk.wav")
- #       self.missed_attack_sound.set_volume(0.5)
-#        self.death_effect_sound = pygame.mixer.Sound("files/audio/death.wav")
-        #self.death_effect_sound.set_volume(0.5)
-       # self.lfighterfinisher_sound = pygame.mixer.Sound("files/audio/lfighterfinisher.wav")
-      #  self.lfighterfinisher_sound.set_volume(0.5)
-     #   self.mfighterfinisher_sound = pygame.mixer.Sound("files/audio/mfighterfinisher.wav")
-    #    self.mfighterfinisher_sound.set_volume(0.5)
-   #     self.hfighterfinisher_sound = pygame.mixer.Sound("files/audio/hfighterfinisher.wav")
-  #      self.hfighterfinisher_sound.set_volume(0.5)
+        self.light_attack_sound = pygame.mixer.Sound("files/audio/lighthit.wav") #load all sound effects
+        self.light_attack_sound.set_volume(0.5)
+        self.medium_attack_sound = pygame.mixer.Sound("files/audio/mediumhit.wav")
+        self.medium_attack_sound.set_volume(0.5)
+        self.heavy_attack_sound = pygame.mixer.Sound("files/audio/heavyhit.wav")
+        self.heavy_attack_sound.set_volume(0.5)
+        self.finisher_attack_sound = pygame.mixer.Sound("files/audio/finisher.wav")
+        self.finisher_attack_sound.set_volume(0.5)
+        self.blocked_attack_sound = pygame.mixer.Sound("files/audio/blockedatk.wav")
+        self.blocked_attack_sound.set_volume(0.5)
+        self.parried_attack_sound = pygame.mixer.Sound("files/audio/parriedatk.wav")
+        self.parried_attack_sound.set_volume(0.5)
+        self.missed_attack_sound = pygame.mixer.Sound("files/audio/missedatk.wav")
+        self.missed_attack_sound.set_volume(0.5)
+        self.death_effect_sound = pygame.mixer.Sound("files/audio/death.wav")
+        self.death_effect_sound.set_volume(0.5)
+        self.lfighterfinisher_sound = pygame.mixer.Sound("files/audio/lfighterfinisher.wav")
+        self.lfighterfinisher_sound.set_volume(0.5)
+        self.mfighterfinisher_sound = pygame.mixer.Sound("files/audio/mfighterfinisher.wav")
+        self.mfighterfinisher_sound.set_volume(0.5)
+        self.hfighterfinisher_sound = pygame.mixer.Sound("files/audio/hfighterfinisher.wav")
+        self.hfighterfinisher_sound.set_volume(0.5)
   
         
 #extract the images from the spritesheet for the current character selected
@@ -201,58 +199,49 @@ class Fighter():
             self.attack_cooldown -= 1
 
     def frame_handler(self):
-        #order priority - death, hit, jump, attack, walk, idle - if order is changed causes errors like can attack while jumping or unable to walk + attack at once
+        #order priority - death, hit, jump, attack, block, walk, idle
         if self.health <= 0:
             self.alive = False
-            self.action_handler(6)#death
+            self.action_handler(6)  # death
         elif self.hit == True:
-            self.action_handler(5)#hit
-      #          if pygame.time.get_ticks() -self.update_time > 150:
-       #             self.update_time = pygame.time.get_ticks()
-         #           self.frame_index += 1
-        #            if self.frame_index >= len(self.animation_list[self.action]):
-          #              self.frame_index = 0
-
+            self.action_handler(5)  # hit
         elif self.jump == True:
-            self.action_handler(7)#jump
+            self.action_handler(7)  # jump
+        elif self.blocking == True:
+            self.action_handler(8)  # block
         elif self.attacking == True:
             if self.attack_type == 1:
-                self.action_handler(2)#lattack
-            elif self.attack_type == 2:   
-                self.action_handler(3)#mattack
+                self.action_handler(2)  # lattack
+            elif self.attack_type == 2:
+                self.action_handler(3)  # mattack
             elif self.attack_type == 3:
-                self.action_handler(4)#hattack
+                self.action_handler(4)  # hattack
             elif self.attack_type == 4:
-                self.action_handler(9)#finisher
+                self.action_handler(9)  # finisher
                 self.finisher_status = False
         
         elif self.moving == True:
-            self.action_handler(1)#walk
-        elif self.blocking == True and not self.moving:
-            self.action_handler(8)
+            self.action_handler(1)  # walk
         else:
-            self.action_handler(0)#idle
-    
+            self.action_handler(0)  # idle
+
         self.image = self.animation_list[self.action][self.frame_index]
         animation_cooldown = 150
         if pygame.time.get_ticks() - self.update_time > animation_cooldown:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
-            if self.frame_index >= len(self.animation_list[self.action]):  #if the frame index is at the end of the current animation
-                #check for player K.O
+            if self.frame_index >= len(self.animation_list[self.action]):  # if the frame index is at the end of the current animation
                 if self.alive == False:
-                    self.frame_index = len(self.animation_list[self.action]) -1 #set the frame index to the last frame of the death animation
+                    self.frame_index = 0
                 else:
-                    self.frame_index = 0  #reset the frame index
-                    if self.action in [2,3,4,9]:
-                        self.attacking = False  #only have self.attacking reset to false when the attack is done
+                    self.frame_index = 0  # reset the frame index
+                    if self.action in [2, 3, 4, 9]:
+                        self.attacking = False  # only reset attacking when the attack is done
                         self.attack_cooldown = 10
                     if self.hit == True:
-                        #interrupt attack if attacked during wind up
                         self.attacking = False
                         self.attack_cooldown = 10
-                
-            
+
     def action_handler(self,new_action):
         #check if new action is different to previous one
         if new_action != self.action:
@@ -344,7 +333,7 @@ class Fighter():
                #     else:
                 #        self.action_handler(4)
 
-        # pygame.draw.rect(surface, (0,255,0), attack_hitbox)
+        #pygame.draw.rect(surface, (0,255,0), attack_hitbox)
 
     def damage(self,damage_dealt,target):
         self.health -= damage_dealt
@@ -387,48 +376,12 @@ class Fighter():
 
 
 import pygame
-from fighter import Fighter
-from characterselection import Charselectionscreen
+
 from pygame import mixer
 import csv
 
 mixer.init()
 pygame.init()
-
-lighticon = pygame.image.load("files/assets/lighticon.png").convert_alpha()
-mediumicon = pygame.image.load("files/assets/mediumicon.png").convert_alpha()
-heavyicon = pygame.image.load("files/assets/heavyicon.png").convert_alpha()
-lighticon = pygame.transform.scale(lighticon, (400, 450))
-mediumicon = pygame.transform.scale(mediumicon, (400, 450))
-heavyicon = pygame.transform.scale(heavyicon, (400, 450))
-
-match_end_time = 0
-match_end_trigger = False
-
-class Timer:
-    def __init__(self):
-        self.start_time = 0
-        self.active = False
-
-    def activate(self):
-        self.active = True
-        self.start_time = pygame.time.get_ticks()
-    
-    def deactivate(self):
-        self.active = False 
-        self.start_time = 0
-    
-    def update(self):
-        if self.active:
-            current_time = pygame.time.get_ticks()
-            time_surf= smallfont.render(str((pygame.time.get_ticks() - (match_timer.start_time)) // 1000), True, (255,255,255)).convert_alpha()
-            time_surf_outline= smallfont.render(str((pygame.time.get_ticks() - (match_timer.start_time)) // 1000), True, (0,0,0)).convert_alpha()
-            screen.blit(time_surf_outline,(width//2 - 7, height//2 - 297))
-            screen.blit(time_surf,(width//2 - 10, height//2 - 300))
-
-#match_timer = Timer()
-#match_timer.activate()
-
 
 #create game window
 res = 1000,600
@@ -493,66 +446,6 @@ def draw_finisherbar(finisher_value, x, y):
     pygame.draw.rect(screen,(26, 43, 68), (x,y,200,20))
     pygame.draw.rect(screen, (59, 130, 246), (x,y,0+finisher_value,20))
 
-def end_match(health,x,y):
-    global match_end_time
-    global match_end_trigger
-    if health <= 0:
-        if match_end_time == 0:
-            match_end_time = pygame.time.get_ticks()
-        current_time = pygame.time.get_ticks()
-        flash_duration = 500
-        #takes the current time, divs it by 2 t get either 2 or a 1, and then mod it by 2 to get a one or a 0
-        #eg: 500(ms currentime) // 500(flashduration) % 2 = 1  
-        if match_end_trigger == False and current_time // flash_duration % 2 == 0: 
-            end_text_body = gameoverfont.render("K.O", True, ((255,10,20))).convert_alpha()
-            end_text_outline = gameoverfont.render("K.O", True, (0,0,0)).convert_alpha()
-            end_text_fill = gameoverfont.render("K.O", True, (255,255,0)).convert_alpha()
-            screen.blit(end_text_outline,(x+45,y-20))
-            screen.blit(end_text_fill,(x+40, y-20))
-            screen.blit(end_text_body,(x+25, y-15))
-
-def win_screen(x,y,text_colour):
-    global input_box
-    global input_text 
-    global input_active  
-    screen.fill((0,0,0))
-    win_text_body = winscreenfont.render("PLAYER X WINS", True, ((255,10,20))).convert_alpha()
-    win_text_outline = winscreenfont.render("WIN", True, (0,0,0)).convert_alpha()
-    screen.blit(win_text_outline,(x+45,y-120))
-    screen.blit(win_text_body,(x-250, y-300)) 
-    screen.blit(heavyicon, (x + 120, y - 175))
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if input_box.collidepoint(event.pos):
-                input_active = True
-                print("selected")
-                
-            else:
-                input_active = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                if len(input_text)<=0 or len(input_text) > 2:
-                    print("cant be empty or more than 2")
-                # error = errorfont.render("Input Cannot Be Empty", True, (255,255,255)).convert_alpha()
-                 #   screen.blit(error, (200, 150))
-                else:
-                    with open("name.csv", mode="a",newline="") as file:
-                        writer = csv.writer(file)
-                        writer.writerow([input_text])
-                    print(f"User typed: {input_text}")  
-                input_text = ""
-            elif event.key == pygame.K_BACKSPACE:
-                input_text = input_text[:-1]
-            else:
-                input_text += event.unicode
-            
-    pygame.draw.rect(screen, (255, 255, 255), input_box)
-    text_surface = smallfont.render(input_text, True, (0,0,255))
-    screen.blit(text_surface, (input_box.x + 5, input_box.y + 5))
-
-
 width = screen.get_width()
 height = screen.get_height()
 
@@ -592,20 +485,6 @@ while run:
     #move fighters
     fighter_1.move(width, height, screen, fighter_2, events)
     fighter_2.move(width, height, screen, fighter_1, events)
-
-    #if match_timer.active:
-      #  match_timer.update()
-    
-  #  if match_end_time != 0:
-   #     if pygame.time.get_ticks() - match_end_time >0000:
-    #        match_end_trigger = True
-     #       win_screen(400,300,((255,255,255)))
-            
-      #      pygame.display.update()
-
-    #check for end of match
-    end_match(fighter_1.health, 400, 300)
-    end_match(fighter_2.health, 400, 300)
 
     #event handler
     for event in events:

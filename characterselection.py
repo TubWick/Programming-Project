@@ -89,31 +89,33 @@ class Charselectionscreen():
             pygame.draw.polygon(screen, (self.hovercolour), self.h_offset_outline, 10)
 
     def ifclicked(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.mouse_pressed == False:
-            if self.turn == "p1": #player 1 selection
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not self.mouse_pressed:
+            self.mouse_pressed = True  # Set mouse_pressed to True
+            print(f"Mouse clicked. Current turn: {self.turn}")
+            if self.turn == "p1":  # Player 1 selection
                 if self.l_rect.collidepoint(pygame.mouse.get_pos()) and self.p2_selected != "light":
                     self.p1_selected = "light"
                 if self.m_rect.collidepoint(pygame.mouse.get_pos()) and self.p2_selected != "medium":
                     self.p1_selected = "medium"
                 if self.h_rect.collidepoint(pygame.mouse.get_pos()) and self.p2_selected != "heavy":
                     self.p1_selected = "heavy"
-                print(f"Turn: {self.turn}, P1 Selected: {self.p1_selected}, P2 Selected: {self.p2_selected}")
-                if self.p1_selected:  #switch turn but only after selection
+                print(f"P1 Selected: {self.p1_selected}, P2 Selected: {self.p2_selected}")
+                if self.p1_selected:  # Switch turn only after selection
                     self.turn = "p2"
-            elif self.turn == "p2": # player 2 selection
-                print(f"Turn: {self.turn}, P1 Selected: {self.p1_selected}, P2 Selected: {self.p2_selected}")
+                    print("Turn switched to P2")
+            elif self.turn == "p2":  # Player 2 selection
                 if self.l_rect.collidepoint(pygame.mouse.get_pos()) and self.p1_selected != "light":
                     self.p2_selected = "light"
                 if self.m_rect.collidepoint(pygame.mouse.get_pos()) and self.p1_selected != "medium":
                     self.p2_selected = "medium"
                 if self.h_rect.collidepoint(pygame.mouse.get_pos()) and self.p1_selected != "heavy":
                     self.p2_selected = "heavy"
-                    print(f"Turn: {self.turn}, P1 Selected: {self.p1_selected}, P2 Selected: {self.p2_selected}")
-                if self.p2_selected:  # switch turn only after selection
+                print(f"P1 Selected: {self.p1_selected}, P2 Selected: {self.p2_selected}")
+                if self.p2_selected:  # Switch turn only after selection
                     self.turn = "p1"
-                    print(f"Turn: {self.turn}, P1 Selected: {self.p1_selected}, P2 Selected: {self.p2_selected}")
-            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                self.mouse_pressed = False
+                    print("Turn switched to P1")
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            self.mouse_pressed = False  # Reset mouse_pressed
 
     def draw_selected_outline(self):
         if self.p1_selected == "light":
@@ -135,6 +137,5 @@ class Charselectionscreen():
             pygame.draw.polygon(screen, (self.selectedcolour), self.h_offset_outline, 10)
             screen.blit(self.p2marker, (self.h_rect.topleft))
 
-    def get_selected_characters(self):
-        #Return the selected characters for Player 1 and Player 2
-        return self.p1_selected, self.p2_selected
+
+
